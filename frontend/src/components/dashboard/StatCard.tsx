@@ -1,6 +1,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, type LucideIcon } from "lucide-react";
+
+interface StatCardProps {
+    title: string;
+    amount: string;
+    change: string;
+    changeType: 'positive' | 'negative' | 'neutral';
+    icon: LucideIcon;
+    iconBgColor: string;
+}
 
 export default function StatCard({
     title,
@@ -9,7 +18,7 @@ export default function StatCard({
     changeType,
     icon: Icon,
     iconBgColor
-}) {
+}: StatCardProps) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -38,10 +47,11 @@ export default function StatCard({
                     {changeType === 'neutral' && (
                         <span>{change}</span>
                     )}
-                    <span className="ml-1">from last month</span>
+                    {changeType !== 'neutral' && (
+                        <span className="ml-1">from last month</span>
+                    )}
                 </p>
             </CardContent>
         </Card>
     );
 }
-

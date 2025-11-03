@@ -1,8 +1,17 @@
 
+import { useEffect } from 'react';
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Bell,
     Wallet,
@@ -12,14 +21,6 @@ import {
     Download,
     Filter
 } from "lucide-react";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import StatCard from "@/components/dashboard/StatCard";
 import BudgetProgressBar from "@/components/dashboard/BudgetProgressBar";
@@ -27,7 +28,10 @@ import IncomeExpenseChart from "@/components/dashboard/IncomeExpenseChart";
 import ExpensePieChart from "@/components/dashboard/ExpensePieChart";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 
-// Mock Data
+import { useTransactionStore } from "@/store/transactionStore";
+import { useBudgetStore } from "@/store/budgetStore";
+
+// Mock Data (will be fetched from API)
 const incomeExpenseData = [
     { month: 'Jun', income: 15000, expense: 4500 },
     { month: 'Jul', income: 16500, expense: 5200 },
@@ -46,55 +50,39 @@ const expenseCategoryData = [
     { category: 'Others', amount: 380 },
 ];
 
-const recentTransactionsData = [
-    {
-        id: 1,
-        name: 'Salary Payment',
-        category: 'Income',
-        amount: 5000,
-        type: 'income',
-        date: '2025-11-02',
-        icon: '💰'
-    },
-    {
-        id: 2,
-        name: 'Grocery Store',
-        category: 'Food & Dining',
-        amount: -120,
-        type: 'expense',
-        date: '2025-11-01',
-        icon: '🛒'
-    },
-    {
-        id: 3,
-        name: 'Electric Bill',
-        category: 'Utilities',
-        amount: -85,
-        type: 'expense',
-        date: '2025-10-31',
-        icon: '⚡'
-    },
-    {
-        id: 4,
-        name: 'Freelance Project',
-        category: 'Income',
-        amount: 1500,
-        type: 'income',
-        date: '2025-10-30',
-        icon: '💼'
-    },
-    {
-        id: 5,
-        name: 'Restaurant',
-        category: 'Food & Dining',
-        amount: -45,
-        type: 'expense',
-        date: '2025-10-29',
-        icon: '🍽️'
-    },
-];
-
 export default function Dashboard() {
+    const { transactions, fetchTransactions } = useTransactionStore();
+    const { fetchBudgets } = useBudgetStore();
+
+    useEffect(() => {
+        // Fetch data on mount
+        // fetchTransactions();
+        // fetchBudgets();
+    }, []);
+
+    // Calculate totals from transactions
+    const totalIncome = transactions
+        .filter(t => t.type === 'income')
+        .reduce((sum, t) => sum + t.amount, 0);
+
+    const totalExpenses = Math.abs(
+        transactions
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0)
+    );
+
+    const totalBalance = totalIncome - totalExpenses;
+
+    // Mock data for demo
+    const stats = {
+        income: { value: 18250, change: '+20.1%', isPositive: true },
+        expenses: { value: 5800, change: '+8.2%', isPositive: false },
+        balance: { value: 12450, change: '+12.5%', isPositive: true },
+        budgetUsed: { value: 78, change: 'Used', isPositive: false },
+    };
+
+    const recentTransactionsData = transactions.slice(0, 5);
+
     return (
         <SidebarProvider>
             <AppSidebar />
@@ -160,32 +148,32 @@ export default function Dashboard() {
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                             <StatCard
                                 title="Total Income"
-                                amount="$18,250.00"
-                                change="+20.1%"
+                                amount={`$${stats.income.value.toLocaleString()}.00`}
+                                change={stats.income.change}
                                 changeType="positive"
                                 icon={TrendingUp}
                                 iconBgColor="bg-emerald-100 dark:bg-emerald-900/20"
                             />
                             <StatCard
                                 title="Total Expenses"
-                                amount="$5,800.00"
-                                change="+8.2%"
+                                amount={`$${stats.expenses.value.toLocaleString()}.00`}
+                                change={stats.expenses.change}
                                 changeType="negative"
                                 icon={TrendingDown}
                                 iconBgColor="bg-red-100 dark:bg-red-900/20"
                             />
                             <StatCard
                                 title="Total Balance"
-                                amount="$12,450.00"
-                                change="+12.5%"
+                                amount={`$${stats.balance.value.toLocaleString()}.00`}
+                                change={stats.balance.change}
                                 changeType="positive"
                                 icon={Wallet}
                                 iconBgColor="bg-blue-100 dark:bg-blue-900/20"
                             />
                             <StatCard
                                 title="Budget Status"
-                                amount="78%"
-                                change="Used"
+                                amount={`${stats.budgetUsed.value}%`}
+                                change={stats.budgetUsed.change}
                                 changeType="neutral"
                                 icon={PiggyBank}
                                 iconBgColor="bg-purple-100 dark:bg-purple-900/20"
@@ -207,7 +195,53 @@ export default function Dashboard() {
 
                         {/* Recent Transactions */}
                         <RecentTransactions
-                            transactions={recentTransactionsData}
+                            transactions={recentTransactionsData.length > 0 ? recentTransactionsData : [
+                                {
+                                    id: 1,
+                                    name: 'Salary Payment',
+                                    category: 'Income',
+                                    amount: 5000,
+                                    type: 'income',
+                                    date: '2025-11-02',
+                                    icon: '💰'
+                                },
+                                {
+                                    id: 2,
+                                    name: 'Grocery Store',
+                                    category: 'Food & Dining',
+                                    amount: -120,
+                                    type: 'expense',
+                                    date: '2025-11-01',
+                                    icon: '🛒'
+                                },
+                                {
+                                    id: 3,
+                                    name: 'Electric Bill',
+                                    category: 'Utilities',
+                                    amount: -85,
+                                    type: 'expense',
+                                    date: '2025-10-31',
+                                    icon: '⚡'
+                                },
+                                {
+                                    id: 4,
+                                    name: 'Freelance Project',
+                                    category: 'Income',
+                                    amount: 1500,
+                                    type: 'income',
+                                    date: '2025-10-30',
+                                    icon: '💼'
+                                },
+                                {
+                                    id: 5,
+                                    name: 'Restaurant',
+                                    category: 'Food & Dining',
+                                    amount: -45,
+                                    type: 'expense',
+                                    date: '2025-10-29',
+                                    icon: '🍽️'
+                                },
+                            ]}
                             limit={5}
                         />
 

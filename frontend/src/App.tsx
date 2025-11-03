@@ -3,7 +3,7 @@ import AuthPage from './pages/Auth';
 import "./App.css";
 import LoginPage from './pages/Login';
 import SignupPage from './pages/Signup';
-import Dashboard from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import BudgetPage from './pages/Budget';
 import TransactionsPage from './pages/Transaction';
 import Settings from './pages/Settings';

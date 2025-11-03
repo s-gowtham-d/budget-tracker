@@ -197,10 +197,10 @@ export default function Transactions() {
 
         switch (sortType) {
             case 'date-desc':
-                sorted.sort((a, b) => new Date(b.date) - new Date(a.date));
+                sorted.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                 break;
             case 'date-asc':
-                sorted.sort((a, b) => new Date(a.date) - new Date(b.date));
+                sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
                 break;
             case 'amount-desc':
                 sorted.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
