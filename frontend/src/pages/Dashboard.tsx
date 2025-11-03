@@ -56,18 +56,18 @@ export default function Dashboard() {
 
     useEffect(() => {
         // Fetch data on mount
-        // fetchTransactions();
-        // fetchBudgets();
+        fetchTransactions();
+        fetchBudgets();
     }, []);
 
     // Calculate totals from transactions
-    const totalIncome = transactions
-        .filter(t => t.type === 'income')
+    const totalIncome = transactions?.results
+        ?.filter(t => t.type === 'income')
         .reduce((sum, t) => sum + t.amount, 0);
 
     const totalExpenses = Math.abs(
-        transactions
-            .filter(t => t.type === 'expense')
+        transactions.results
+            ?.filter(t => t.type === 'expense')
             .reduce((sum, t) => sum + t.amount, 0)
     );
 
@@ -81,7 +81,7 @@ export default function Dashboard() {
         budgetUsed: { value: 78, change: 'Used', isPositive: false },
     };
 
-    const recentTransactionsData = transactions.slice(0, 5);
+    const recentTransactionsData = transactions?.results?.slice(0, 5);
 
     return (
         <SidebarProvider>
@@ -195,7 +195,7 @@ export default function Dashboard() {
 
                         {/* Recent Transactions */}
                         <RecentTransactions
-                            transactions={recentTransactionsData.length > 0 ? recentTransactionsData : [
+                            transactions={recentTransactionsData?.length > 0 ? recentTransactionsData : [
                                 {
                                     id: 1,
                                     name: 'Salary Payment',

@@ -5,12 +5,14 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from .serializers import (
-    UserSerializer, UserRegistrationSerializer, ChangePasswordSerializer
+    UserSerializer, UserRegistrationSerializer, ChangePasswordSerializer, CustomTokenObtainPairSerializer
 )
 
 User = get_user_model()
 
-
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+    
 class RegisterView(generics.CreateAPIView):
     """Register a new user"""
     queryset = User.objects.all()

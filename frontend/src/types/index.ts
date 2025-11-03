@@ -37,7 +37,8 @@ export interface AuthState {
 }
 
 export interface TransactionState {
-    transactions: Transaction[];
+    // transactions: Transaction[];
+    transactions: any;
     filteredTransactions: Transaction[];
     isLoading: boolean;
     addTransaction: (transaction: Omit<Transaction, 'id'>) => void;

@@ -9,6 +9,7 @@ urlpatterns = [
     # Authentication
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', TokenObtainPairView.as_view(), name='login'),
+    # path('login/', views.CustomTokenObtainPairView.as_view(), name='login'),
     path('refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     
     # Profile

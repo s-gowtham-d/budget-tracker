@@ -1,9 +1,50 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+
 
 User = get_user_model()
 
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT serializer for login with custom validation and messages
+    """
+
+    username_field = User.EMAIL_FIELD 
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        # Check if the user exists
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"email": "No account found with this email."})
+
+        # Authenticate user
+        user = authenticate(email=email, password=password)
+        if not user:
+            raise serializers.ValidationError({"password": "Incorrect password. Please try again."})
+
+        if not user.is_active:
+            raise serializers.ValidationError({"email": "This account is inactive. Contact support."})
+
+        # Generate token pair
+        data = super().validate(attrs)
+        data.update({
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "full_name": user.full_name,
+                "theme": user.theme,
+            }
+        })
+        return data
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for user profile"""

@@ -1,77 +1,241 @@
 
+// import { create } from 'zustand';
+// import { persist } from 'zustand/middleware';
+// import type { AuthState, User } from '@/types';
+// import { authAPI } from '@/lib/api';
+
+// export const useAuthStore = create<AuthState>()(
+//     persist(
+//         (set) => ({
+//             user: null,
+//             token: null,
+//             isAuthenticated: false,
+//             isLoading: false,
+
+//             login: async (email: string, password: string) => {
+//                 set({ isLoading: true });
+//                 try {
+//                     // Mock API call - Replace with real API
+//                     const response = await authAPI.login(email, password);
+//                     console.log(response)
+//                     const { user, access } = response.data;
+
+//                     localStorage.setItem('token', access);
+//                     set({
+//                         user,
+//                         token: access,
+//                         isAuthenticated: true,
+//                         isLoading: false,
+//                     });
+//                 } catch (error) {
+//                     set({ isLoading: false });
+//                     throw error;
+//                 }
+//             },
+
+//             register: async (name: string, email: string, password: string) => {
+//                 set({ isLoading: true });
+//                 try {
+//                     const response = await authAPI.register(name, email, password);
+//                     const { user, token } = response.data;
+
+//                     localStorage.setItem('token', token);
+//                     set({
+//                         user,
+//                         token,
+//                         isAuthenticated: true,
+//                         isLoading: false,
+//                     });
+//                 } catch (error) {
+//                     set({ isLoading: false });
+//                     throw error;
+//                 }
+//             },
+
+//             logout: () => {
+//                 localStorage.removeItem('token');
+//                 set({
+//                     user: null,
+//                     token: null,
+//                     isAuthenticated: false,
+//                 });
+//             },
+
+//             setUser: (user: User) => {
+//                 set({ user });
+//             },
+//         }),
+//         {
+//             name: 'auth-storage',
+//             partialize: (state) => ({
+//                 user: state.user,
+//                 token: state.token,
+//                 isAuthenticated: state.isAuthenticated,
+//             }),
+//         }
+//     )
+// );
+
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { AuthState, User } from '@/types';
+import type { User } from '@/types';
 import { authAPI } from '@/lib/api';
+import { AxiosError } from 'axios';
+
+interface AuthState {
+    user: User | null;
+    accessToken: string | null;
+    refreshToken: string | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
+    error: string | null;
+    login: (email: string, password: string) => Promise<void>;
+    register: (data: RegisterData) => Promise<void>;
+    logout: () => void;
+    setUser: (user: User) => void;
+    clearError: () => void;
+}
+
+interface RegisterData {
+    email: string;
+    username: string;
+    first_name: string;
+    last_name: string;
+    password: string;
+    password_confirm: string;
+}
 
 export const useAuthStore = create<AuthState>()(
     persist(
         (set) => ({
             user: null,
-            token: null,
+            accessToken: null,
+            refreshToken: null,
             isAuthenticated: false,
             isLoading: false,
+            error: null,
 
             login: async (email: string, password: string) => {
-                set({ isLoading: true });
+                set({ isLoading: true, error: null });
                 try {
-                    // Mock API call - Replace with real API
                     const response = await authAPI.login(email, password);
-                    const { user, token } = response.data;
+                    const { access, refresh, user } = response.data;
 
-                    localStorage.setItem('token', token);
+                    // Store tokens
+                    localStorage.setItem('access_token', access);
+                    localStorage.setItem('refresh_token', refresh);
+
                     set({
                         user,
-                        token,
+                        accessToken: access,
+                        refreshToken: refresh,
                         isAuthenticated: true,
                         isLoading: false,
+                        error: null,
                     });
                 } catch (error) {
-                    set({ isLoading: false });
-                    throw error;
+                    const axiosError = error as AxiosError<any>;
+                    const errorMessage =
+                        axiosError.response?.data?.detail ||
+                        axiosError.response?.data?.message ||
+                        axiosError.response?.data?.non_field_errors?.[0] ||
+                        'Invalid email or password';
+
+                    set({
+                        isLoading: false,
+                        error: errorMessage,
+                        isAuthenticated: false,
+                    });
+                    throw new Error(errorMessage);
                 }
             },
 
-            register: async (name: string, email: string, password: string) => {
-                set({ isLoading: true });
+            register: async (data: RegisterData) => {
+                set({ isLoading: true, error: null });
                 try {
-                    const response = await authAPI.register(name, email, password);
-                    const { user, token } = response.data;
+                    const response = await authAPI.register(data);
+                    const { access, refresh, user } = response.data;
 
-                    localStorage.setItem('token', token);
+                    // Store tokens
+                    localStorage.setItem('access_token', access);
+                    localStorage.setItem('refresh_token', refresh);
+
                     set({
                         user,
-                        token,
+                        accessToken: access,
+                        refreshToken: refresh,
                         isAuthenticated: true,
                         isLoading: false,
+                        error: null,
                     });
                 } catch (error) {
-                    set({ isLoading: false });
-                    throw error;
+                    const axiosError = error as AxiosError<any>;
+
+                    // Handle different error formats
+                    let errorMessage = 'Registration failed';
+
+                    if (axiosError.response?.data) {
+                        const data = axiosError.response.data;
+
+                        // Handle field-specific errors
+                        if (data.email) {
+                            errorMessage = Array.isArray(data.email) ? data.email[0] : data.email;
+                        } else if (data.username) {
+                            errorMessage = Array.isArray(data.username) ? data.username[0] : data.username;
+                        } else if (data.password) {
+                            errorMessage = Array.isArray(data.password) ? data.password[0] : data.password;
+                        } else if (data.non_field_errors) {
+                            errorMessage = Array.isArray(data.non_field_errors)
+                                ? data.non_field_errors[0]
+                                : data.non_field_errors;
+                        } else if (data.detail) {
+                            errorMessage = data.detail;
+                        } else if (data.message) {
+                            errorMessage = data.message;
+                        }
+                    }
+
+                    set({
+                        isLoading: false,
+                        error: errorMessage,
+                        isAuthenticated: false,
+                    });
+                    throw new Error(errorMessage);
                 }
             },
 
             logout: () => {
-                localStorage.removeItem('token');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
                 set({
                     user: null,
-                    token: null,
+                    accessToken: null,
+                    refreshToken: null,
                     isAuthenticated: false,
+                    error: null,
                 });
             },
 
             setUser: (user: User) => {
                 set({ user });
             },
+
+            clearError: () => {
+                set({ error: null });
+            },
         }),
         {
             name: 'auth-storage',
             partialize: (state) => ({
                 user: state.user,
-                token: state.token,
+                accessToken: state.accessToken,
+                refreshToken: state.refreshToken,
                 isAuthenticated: state.isAuthenticated,
             }),
         }
     )
 );
+
+
 
