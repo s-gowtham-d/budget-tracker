@@ -30,15 +30,15 @@ export default function RecentTransactions({ transactions, limit = 5 }) {
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`h-10 w-10 rounded-lg flex items-center justify-center text-xl ${transaction.type === 'income'
-                                        ? 'bg-emerald-100 dark:bg-emerald-900/20'
-                                        : 'bg-red-100 dark:bg-red-900/20'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/20'
+                                    : 'bg-red-100 dark:bg-red-900/20'
                                     }`}>
                                     {transaction.icon}
                                 </div>
                                 <div>
                                     <p className="font-medium">{transaction.name}</p>
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm text-muted-foreground">{transaction.category}</p>
+                                        <p className="text-sm text-muted-foreground">{transaction.category_name}</p>
                                         <span className="text-xs text-muted-foreground">
                                             • {format(new Date(transaction.date), 'MMM dd, yyyy')}
                                         </span>

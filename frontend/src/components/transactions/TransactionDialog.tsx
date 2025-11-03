@@ -30,6 +30,8 @@ import {
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
+
 
 const transactionSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -44,33 +46,35 @@ const transactionSchema = z.object({
     description: z.string().optional(),
 });
 
-const INCOME_CATEGORIES = [
-    'Salary',
-    'Freelance',
-    'Business',
-    'Investment',
-    'Gift',
-    'Other Income'
-];
+// const INCOME_CATEGORIES = [
+//     'Salary',
+//     'Freelance',
+//     'Business',
+//     'Investment',
+//     'Gift',
+//     'Other Income'
+// ];
 
-const EXPENSE_CATEGORIES = [
-    'Food & Dining',
-    'Transportation',
-    'Shopping',
-    'Entertainment',
-    'Bills & Utilities',
-    'Healthcare',
-    'Education',
-    'Travel',
-    'Personal Care',
-    'Other Expense'
-];
+// const EXPENSE_CATEGORIES = [
+//     'Food & Dining',
+//     'Transportation',
+//     'Shopping',
+//     'Entertainment',
+//     'Bills & Utilities',
+//     'Healthcare',
+//     'Education',
+//     'Travel',
+//     'Personal Care',
+//     'Other Expense'
+// ];
 
 export default function TransactionDialog({
     open,
     onOpenChange,
     transaction,
-    onSave
+    onSave,
+    categories
+
 }) {
     const [isLoading, setIsLoading] = useState(false);
     const [date, setDate] = useState(transaction?.date ? new Date(transaction.date) : new Date());
@@ -98,20 +102,33 @@ export default function TransactionDialog({
         }
     });
 
-    const categories = transactionType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    const incomeCategories = useMemo(
+        () => categories?.filter(cat => cat.type === 'income') || [],
+        [categories]
+    );
+
+    const expenseCategories = useMemo(
+        () => categories?.filter(cat => cat.type === 'expense') || [],
+        [categories]
+    );
+    const filteredCategories = transactionType === 'income' ? incomeCategories : expenseCategories;
+
+
+    // const categories = transactionType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 
     const onSubmit = async (data) => {
         setIsLoading(true);
         try {
             const transactionData = {
                 ...data,
+                category: parseInt(data.category, 10),
                 amount: data.type === 'expense' ? -Math.abs(parseFloat(data.amount)) : Math.abs(parseFloat(data.amount)),
                 date: format(data.date, 'yyyy-MM-dd'),
                 id: transaction?.id || Date.now(),
                 icon: data.type === 'income' ? '💰' : getCategoryIcon(data.category),
             };
 
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+            // await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
 
             onSave(transactionData);
             reset();
@@ -147,7 +164,7 @@ export default function TransactionDialog({
             setValue('name', transaction.name);
             setValue('amount', Math.abs(transaction.amount).toString());
             setValue('type', transaction.type);
-            setValue('category', transaction.category);
+            setValue('category', transaction.category.toString());
             setValue('date', new Date(transaction.date));
             setValue('description', transaction.description || '');
             setTransactionType(transaction.type);
@@ -227,17 +244,21 @@ export default function TransactionDialog({
                         <Label>Category</Label>
                         <Select
                             onValueChange={(value) => setValue('category', value)}
-                            defaultValue={transaction?.category}
+                            defaultValue={transaction?.category.toString()}
                         >
                             <SelectTrigger className={cn(errors.category && 'border-red-500')}>
                                 <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                                {categories.map((category) => (
-                                    <SelectItem key={category} value={category}>
-                                        {category}
+                                {filteredCategories.map((category) => (
+                                    <SelectItem key={category.id} value={category.id.toString()}>
+                                        <span className="flex items-center gap-2">
+                                            <span>{category.icon}</span>
+                                            <span>{category.name}</span>
+                                        </span>
                                     </SelectItem>
                                 ))}
+
                             </SelectContent>
                         </Select>
                         {errors.category && (

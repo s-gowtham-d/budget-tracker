@@ -36,6 +36,7 @@ import Settings from './pages/Settings';
 import { useAuthStore } from './store/authStore';
 import LoginPage from "./pages/Login";
 import SignupPage from "./pages/Signup";
+import { Toaster } from "@/components/ui/sonner"
 
 // Protected Route Component
 interface ProtectedRouteProps {
@@ -63,6 +64,7 @@ function App() {
 
   return (
     <Router>
+      <Toaster />
       <Routes>
         {/* Public Routes */}
         <Route

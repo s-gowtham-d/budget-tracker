@@ -60,8 +60,8 @@ export default function TransactionTable({ transactions, onEdit, onDelete }) {
                                 <TableRow key={transaction.id}>
                                     <TableCell>
                                         <div className={`text-xl ${transaction.type === 'income'
-                                                ? 'bg-emerald-100 dark:bg-emerald-900/20'
-                                                : 'bg-red-100 dark:bg-red-900/20'
+                                            ? 'bg-emerald-100 dark:bg-emerald-900/20'
+                                            : 'bg-red-100 dark:bg-red-900/20'
                                             } w-10 h-10 rounded-lg flex items-center justify-center`}>
                                             {transaction.icon}
                                         </div>
@@ -77,15 +77,15 @@ export default function TransactionTable({ transactions, onEdit, onDelete }) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="secondary">{transaction.category}</Badge>
+                                        <Badge variant="secondary">{transaction.category_name}</Badge>
                                     </TableCell>
                                     <TableCell>
                                         {format(new Date(transaction.date), 'MMM dd, yyyy')}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <span className={`font-semibold ${transaction.type === 'income'
-                                                ? 'text-emerald-600'
-                                                : 'text-red-600'
+                                            ? 'text-emerald-600'
+                                            : 'text-red-600'
                                             }`}>
                                             {transaction.type === 'income' ? '+' : '-'}$
                                             {Math.abs(transaction.amount).toLocaleString()}
