@@ -318,7 +318,7 @@ export function LoginForm({ className = "", onSuccess }: LoginFormProps) {
 
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
-          <a href="#" className="underline underline-offset-4 hover:text-foreground">
+          <a href="/register" className="underline underline-offset-4 hover:text-foreground">
             Sign up
           </a>
         </p>

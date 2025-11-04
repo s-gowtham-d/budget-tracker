@@ -2,10 +2,12 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from '@/lib/currency';
 
 export default function IncomeExpenseChart({ data }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
+    const { symbol } = useCurrency();
 
     useEffect(() => {
         if (!data || data.length === 0) return;
@@ -61,7 +63,7 @@ export default function IncomeExpenseChart({ data }) {
 
         // Add Y axis
         svg.append('g')
-            .call(d3.axisLeft(y).ticks(5).tickFormat(d => `$${d / 1000}k`))
+            .call(d3.axisLeft(y).ticks(5).tickFormat(d => `${symbol}${d / 100}k`))
             .selectAll('text')
             .style('font-size', '12px');
 
@@ -201,7 +203,7 @@ export default function IncomeExpenseChart({ data }) {
         <Card>
             <CardHeader>
                 <CardTitle>Income vs Expenses</CardTitle>
-                <CardDescription>Last 6 months comparison (D3.js)</CardDescription>
+                <CardDescription>Last 6 months comparison</CardDescription>
             </CardHeader>
             <CardContent>
                 <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>

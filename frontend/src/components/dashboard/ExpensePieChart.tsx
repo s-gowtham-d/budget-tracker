@@ -2,10 +2,13 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from '@/lib/currency';
 
 export default function ExpensePieChart({ data }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
+      const { symbol } = useCurrency();
+
 
     useEffect(() => {
         if (!data || data.length === 0) return;
@@ -96,7 +99,7 @@ export default function ExpensePieChart({ data }) {
                     .style('visibility', 'visible')
                     .html(`
             <strong>${d.data.category}</strong><br/>
-            Amount: $${d.data.amount.toLocaleString()}<br/>
+            Amount: ${symbol}${d.data.amount.toLocaleString()}<br/>
             ${percentage}% of total
           `);
             })
@@ -163,7 +166,7 @@ export default function ExpensePieChart({ data }) {
             .style('font-weight', 'bold')
             .style('fill', 'currentColor')
             .style('opacity', 0)
-            .text(`$${total.toLocaleString()}`)
+            .text(`${symbol}${total.toLocaleString()}`)
             .transition()
             .delay(1000)
             .duration(400)
@@ -179,7 +182,7 @@ export default function ExpensePieChart({ data }) {
         <Card>
             <CardHeader>
                 <CardTitle>Expense Breakdown</CardTitle>
-                <CardDescription>By category this month (D3.js)</CardDescription>
+                <CardDescription>By category this month</CardDescription>
             </CardHeader>
             <CardContent>
                 <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
@@ -197,7 +200,7 @@ export default function ExpensePieChart({ data }) {
                                     style={{ backgroundColor: colors[index % colors.length] }}
                                 />
                                 <span className="text-xs text-muted-foreground">
-                                    {item.category} (${item.amount.toLocaleString()})
+                                    {item.category} ({symbol}{item.amount.toLocaleString()})
                                 </span>
                             </div>
                         );

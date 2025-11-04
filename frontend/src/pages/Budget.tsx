@@ -208,7 +208,7 @@
 
 // export default function Budget() {
 //     const [budgets, setBudgets] = useState(INITIAL_BUDGETS);
-//     const [selectedMonth, setSelectedMonth] = useState('2025-11');
+//     const [selectedMonth, setSelectedMonth] = useState(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
 //     const [editingCategory, setEditingCategory] = useState(null);
 //     const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -428,8 +428,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useBudgetStore } from "@/store/budgetStore";
 import { toast } from "sonner"
 import { useTransactionStore } from '@/store/transactionStore';
+import { useCurrency } from '@/lib/currency';
 
 function CategoryBudgetCard({ category, onEdit, isLoading }: any) {
+    const { symbol } = useCurrency();
+
     if (isLoading) {
         return (
             <Card>
@@ -470,12 +473,12 @@ function CategoryBudgetCard({ category, onEdit, isLoading }: any) {
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Spent</span>
                     <span className={`font-bold ${isOverBudget ? 'text-red-600' : ''}`}>
-                        ${category.spent?.toLocaleString() || 0}
+                        {symbol}{category.spent?.toLocaleString() || 0}
                     </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Budget</span>
-                    <span className="font-medium">${category.amount.toLocaleString()}</span>
+                    <span className="font-medium">{symbol}{category.amount.toLocaleString()}</span>
                 </div>
                 <Progress value={percentage > 100 ? 100 : percentage} className="h-2" />
                 <div className="flex items-center justify-between">
@@ -484,14 +487,14 @@ function CategoryBudgetCard({ category, onEdit, isLoading }: any) {
                             <>
                                 <AlertTriangle className="h-3 w-3 text-red-500" />
                                 <span className="text-xs text-red-600 font-medium">
-                                    Over by ${Math.abs(remaining).toLocaleString()}
+                                    Over by {symbol}{Math.abs(remaining).toLocaleString()}
                                 </span>
                             </>
                         ) : (
                             <>
                                 <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                                 <span className="text-xs text-emerald-600 font-medium">
-                                    ${remaining.toLocaleString()} left
+                                    {symbol}{remaining.toLocaleString()} left
                                 </span>
                             </>
                         )}
@@ -507,6 +510,7 @@ function CategoryBudgetCard({ category, onEdit, isLoading }: any) {
 
 function EditBudgetDialog({ open, onOpenChange, category, onSave, isLoading }: any) {
     const [amount, setAmount] = useState(category?.amount || 0);
+    const { symbol } = useCurrency();
 
     useEffect(() => {
         if (category) {
@@ -529,7 +533,7 @@ function EditBudgetDialog({ open, onOpenChange, category, onSave, isLoading }: a
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <Label>Monthly Budget ($)</Label>
+                        <Label>Monthly Budget ({symbol})</Label>
                         <Input
                             type="number"
                             value={amount}
@@ -542,7 +546,7 @@ function EditBudgetDialog({ open, onOpenChange, category, onSave, isLoading }: a
                     <div className="rounded-lg bg-muted p-3 text-sm">
                         <p className="font-medium mb-1">Current Status</p>
                         <p className="text-muted-foreground text-xs">
-                            Spent: ${category?.spent?.toLocaleString() || 0}
+                            Spent: {symbol}{category?.spent?.toLocaleString() || 0}
                         </p>
                     </div>
                 </div>
@@ -569,10 +573,11 @@ function EditBudgetDialog({ open, onOpenChange, category, onSave, isLoading }: a
     );
 }
 
-function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories }: any) {
+function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories, existingCategories }: any) {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('');
-    const [month, setMonth] = useState('2025-11'); // default month
+    const [month, setMonth] = useState(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
+    const { symbol } = useCurrency();
 
     const handleSave = () => {
         if (!amount || !category) return;
@@ -581,6 +586,9 @@ function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories 
             category: parseInt(category),
             month: `${month}-01`
         });
+        setAmount('');
+        setCategory('');
+        setMonth(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
     };
 
     return (
@@ -602,7 +610,7 @@ function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories 
                                 <SelectValue placeholder="Select a category" />
                             </SelectTrigger>
                             <SelectContent>
-                                {categories?.map((c: any) => (
+                                {categories?.filter((c: any) => c.type === 'expense' && !existingCategories?.includes(c.id)).map((c: any) => (
                                     <SelectItem key={c.id} value={String(c.id)}>
                                         {c.icon} {c.name}
                                     </SelectItem>
@@ -628,7 +636,7 @@ function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories 
 
                     {/* Amount Input */}
                     <div className="space-y-2">
-                        <Label>Budget Amount ($)</Label>
+                        <Label>Budget Amount ({symbol})</Label>
                         <Input
                             type="number"
                             value={amount}
@@ -678,11 +686,12 @@ export default function Budget() {
 
     const { categories, fetchCategories } = useTransactionStore();
 
-    const [selectedMonth, setSelectedMonth] = useState('2025-11');
+    const [selectedMonth, setSelectedMonth] = useState(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
     const [editingCategory, setEditingCategory] = useState(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+    const { symbol } = useCurrency();
 
     useEffect(() => {
         fetchBudgets(selectedMonth);
@@ -795,16 +804,16 @@ export default function Budget() {
                                         <div className="grid gap-6 md:grid-cols-3 mb-6">
                                             <div>
                                                 <p className="text-sm text-muted-foreground mb-1">Total Budget</p>
-                                                <p className="text-3xl font-bold">${totalBudget?.toLocaleString()}</p>
+                                                <p className="text-3xl font-bold">{symbol}{totalBudget?.toLocaleString()}</p>
                                             </div>
                                             <div>
                                                 <p className="text-sm text-muted-foreground mb-1">Total Spent</p>
-                                                <p className="text-3xl font-bold text-blue-600">${totalSpent?.toLocaleString()}</p>
+                                                <p className="text-3xl font-bold text-blue-600">{symbol}{totalSpent?.toLocaleString()}</p>
                                             </div>
                                             <div>
                                                 <p className="text-sm text-muted-foreground mb-1">Remaining</p>
                                                 <p className={`text-3xl font-bold ${totalRemaining < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                                                    ${Math.abs(totalRemaining)?.toLocaleString()}
+                                                    {symbol}{Math.abs(totalRemaining)?.toLocaleString()}
                                                 </p>
                                             </div>
                                         </div>
@@ -823,32 +832,49 @@ export default function Budget() {
                         </Card>
 
                         {/* Budget Comparison Chart */}
-                        {isLoading ? (
+                       {isLoading ? (
                             <div className="h-[500px] border rounded-lg flex items-center justify-center bg-card">
                                 <Loader2 className="h-8 w-8 animate-spin" />
                             </div>
-                        ) : (
+                            ) : comparison && comparison.length > 0 ? (
                             <BudgetComparisonChart data={comparison} />
+                            ) : (
+                            <div className="h-[400px] flex flex-col items-center justify-center border rounded-lg bg-card text-center text-muted-foreground">
+                                <PiggyBank className="h-10 w-10 mb-3 text-muted-foreground" />
+                                <p className="text-sm">No budget data available for this month.</p>
+                                <p className="text-xs">Create a new budget to see category-wise comparison.</p>
+                            </div>
                         )}
+
 
                         {/* Category Budgets */}
                         <div>
                             <h2 className="text-xl font-semibold mb-4">Category Budgets</h2>
-                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {isLoading ? (
-                                    Array.from({ length: 6 }).map((_, i) => (
-                                        <CategoryBudgetCard key={i} isLoading={true} />
-                                    ))
-                                ) : (
-                                    budgets?.results?.map((budget) => (
-                                        <CategoryBudgetCard
-                                            key={budget.id}
-                                            category={budget}
-                                            onEdit={handleEditBudget}
-                                        />
-                                    ))
-                                )}
+                           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                            {isLoading ? (
+                                Array.from({ length: 6 }).map((_, i) => (
+                                <CategoryBudgetCard key={i} isLoading={true} />
+                                ))
+                            ) : budgets?.results?.length > 0 ? (
+                                budgets?.results.map((budget) => (
+                                <CategoryBudgetCard
+                                    key={budget.id}
+                                    category={budget}
+                                    onEdit={handleEditBudget}
+                                />
+                                ))
+                            ) : (
+                                <div className="col-span-full flex flex-col items-center justify-center p-10 border rounded-lg bg-card text-muted-foreground">
+                                <PiggyBank className="h-10 w-10 mb-3 text-muted-foreground" />
+                                <p className="text-sm font-medium">No budgets found for this month</p>
+                                <p className="text-xs mt-1 mb-3">Start by creating your first budget below</p>
+                                <Button onClick={() => setCreateDialogOpen(true)} variant="default">
+                                    + Create Budget
+                                </Button>
+                                </div>
+                            )}
                             </div>
+
                         </div>
                     </div>
                 </main>
@@ -863,6 +889,7 @@ export default function Budget() {
             />
 
             <CreateBudgetDialog
+                existingCategories={budgets?.results?.map((b: any) => b.category)}
                 open={createDialogOpen}
                 onOpenChange={setCreateDialogOpen}
                 onSave={handleCreateBudget}

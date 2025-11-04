@@ -31,6 +31,7 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useMemo } from 'react';
+import { useCurrency } from '@/lib/currency';
 
 
 const transactionSchema = z.object({
@@ -79,6 +80,7 @@ export default function TransactionDialog({
     const [isLoading, setIsLoading] = useState(false);
     const [date, setDate] = useState(transaction?.date ? new Date(transaction.date) : new Date());
     const [transactionType, setTransactionType] = useState(transaction?.type || 'expense');
+    const { symbol } = useCurrency();
 
     const {
         register,
@@ -225,7 +227,7 @@ export default function TransactionDialog({
 
                     {/* Amount */}
                     <div className="space-y-2">
-                        <Label htmlFor="amount">Amount ($)</Label>
+                        <Label htmlFor="amount">Amount ({symbol})</Label>
                         <Input
                             id="amount"
                             type="number"

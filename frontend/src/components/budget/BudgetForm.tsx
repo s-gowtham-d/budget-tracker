@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { useCurrency } from "@/lib/currency"
 
 const formSchema = z.object({
     category: z.string().min(2, "Category is required"),
@@ -13,6 +14,7 @@ const formSchema = z.object({
 })
 
 export function BudgetForm({ onAddBudget }) {
+    const { symbol } = useCurrency();
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: { category: "", limit: 0, spent: 0 },
@@ -50,7 +52,7 @@ export function BudgetForm({ onAddBudget }) {
                             name="limit"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Budget Limit ($)</FormLabel>
+                                    <FormLabel>Budget Limit ({symbol})</FormLabel>
                                     <FormControl>
                                         <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                     </FormControl>
@@ -63,7 +65,7 @@ export function BudgetForm({ onAddBudget }) {
                             name="spent"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Amount Spent ($)</FormLabel>
+                                    <FormLabel>Amount Spent ({symbol})</FormLabel>
                                     <FormControl>
                                         <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
                                     </FormControl>

@@ -30,9 +30,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Pencil, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useCurrency } from '@/lib/currency';
 
 export default function TransactionTable({ transactions, onEdit, onDelete }) {
     const [deleteId, setDeleteId] = useState(null);
+    const { symbol } = useCurrency();
 
     return (
         <>
@@ -87,7 +89,7 @@ export default function TransactionTable({ transactions, onEdit, onDelete }) {
                                             ? 'text-emerald-600'
                                             : 'text-red-600'
                                             }`}>
-                                            {transaction.type === 'income' ? '+' : '-'}$
+                                            {transaction.type === 'income' ? '+' : '-'}{symbol}
                                             {Math.abs(transaction.amount).toLocaleString()}
                                         </span>
                                     </TableCell>

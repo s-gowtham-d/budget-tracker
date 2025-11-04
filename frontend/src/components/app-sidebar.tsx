@@ -414,6 +414,7 @@ import {
   SidebarGroupLabel,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useDashboardStore } from "@/store/dashboardStore";
 
 interface NavItem {
   title: string;
@@ -451,6 +452,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { theme, setTheme } = useTheme();
   const { open } = useSidebar();
   const { symbol, format } = useCurrency();
+  const {summary} = useDashboardStore();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -471,7 +473,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   // Mock balance - replace with actual data from API
-  const totalBalance = 12450.00;
+  const totalBalance = summary?.summary.balance || 0;
 
   return (
     <Sidebar collapsible="icon" {...props}>

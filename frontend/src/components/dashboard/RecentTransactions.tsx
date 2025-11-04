@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { ArrowRight, TrendingUp, TrendingDown } from "lucide-react";
 import { format } from "date-fns";
+import { useCurrency } from "@/lib/currency";
 
 export default function RecentTransactions({ transactions, limit = 5 }) {
     const displayTransactions = transactions.slice(0, limit);
+    const { symbol } = useCurrency();
 
     return (
         <Card>
@@ -49,7 +51,7 @@ export default function RecentTransactions({ transactions, limit = 5 }) {
                                 <div>
                                     <p className={`font-semibold ${transaction.type === 'income' ? 'text-emerald-600' : 'text-red-600'
                                         }`}>
-                                        {transaction.type === 'income' ? '+' : '-'}${Math.abs(transaction.amount).toLocaleString()}
+                                        {transaction.type === 'income' ? '+' : '-'}{symbol}{Math.abs(transaction.amount).toLocaleString()}
                                     </p>
                                 </div>
                                 {transaction.type === 'income' ? (

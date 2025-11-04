@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { useCurrency } from "@/lib/currency"
 
 const txSchema = z.object({
     name: z.string().min(2),
@@ -20,6 +21,7 @@ const txSchema = z.object({
 export function TransactionForm({ onAddTransaction }) {
     const form = useForm({ resolver: zodResolver(txSchema), defaultValues: { name: "", category: "", type: "expense", amount: 0, date: "" } })
     const onSubmit = (values) => { onAddTransaction(values); form.reset() }
+    const { symbol } = useCurrency();
 
     return (
         <Card>
@@ -46,7 +48,7 @@ export function TransactionForm({ onAddTransaction }) {
                             </FormItem>
                         )} />
                         <FormField name="amount" control={form.control} render={({ field }) => (
-                            <FormItem><FormLabel>Amount ($)</FormLabel><FormControl><Input type="number" onChange={(e) => field.onChange(Number(e.target.value))} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Amount ({symbol})</FormLabel><FormControl><Input type="number" onChange={(e) => field.onChange(Number(e.target.value))} /></FormControl><FormMessage /></FormItem>
                         )} />
                         <FormField name="date" control={form.control} render={({ field }) => (
                             <FormItem><FormLabel>Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl><FormMessage /></FormItem>

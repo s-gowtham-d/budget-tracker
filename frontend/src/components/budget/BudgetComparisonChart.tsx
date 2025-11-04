@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrency } from '@/lib/currency';
 
 export default function BudgetComparisonChart({ data }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
+      const { symbol } = useCurrency();
+
 
     useEffect(() => {
         if (!data || data.length === 0) return;
@@ -39,7 +42,7 @@ export default function BudgetComparisonChart({ data }) {
         // Add X axis
         svg.append('g')
             .attr('transform', `translate(0,${height})`)
-            .call(d3.axisBottom(x).ticks(5).tickFormat(d => `$${d / 1000}k`))
+            .call(d3.axisBottom(x).ticks(5).tickFormat(d => `${symbol}${d / 1000}k`))
             .selectAll('text')
             .style('font-size', '12px');
 
@@ -78,8 +81,8 @@ export default function BudgetComparisonChart({ data }) {
             .enter()
             .append('rect')
             .attr('class', 'budget-bar')
-            .attr('x', 0)
-            .attr('y', d => y(d.category))
+            .attr('x', 1)
+            .attr('y', d => y(d.category)! + y.bandwidth() / 4)
             .attr('width', 0)
             .attr('height', y.bandwidth() / 2)
             .attr('fill', '#e2e8f0')
@@ -94,8 +97,8 @@ export default function BudgetComparisonChart({ data }) {
             .enter()
             .append('rect')
             .attr('class', 'spent-bar')
-            .attr('x', 0)
-            .attr('y', d => y(d.category))
+            .attr('x', 1)
+            .attr('y', d => y(d.category)! + y.bandwidth() / 4)
             .attr('width', 0)
             .attr('height', y.bandwidth() / 2)
             .attr('fill', d => d.spent > d.budget ? '#ef4444' : '#10b981')
@@ -107,15 +110,18 @@ export default function BudgetComparisonChart({ data }) {
                     .style('visibility', 'visible')
                     .html(`
             <strong>${d.category}</strong><br/>
-            Budget: $${d.budget.toLocaleString()}<br/>
-            Spent: $${d.spent.toLocaleString()}<br/>
+            Budget: ${symbol}${d.budget.toLocaleString()}<br/>
+            Spent: ${symbol}${d.spent.toLocaleString()}<br/>
             ${percentage}% used
           `);
             })
             .on('mousemove', function (event) {
+                const containerRect = container.getBoundingClientRect();
+                const tooltipX = event.clientX - containerRect.left + 10;
+                const tooltipY = event.clientY - containerRect.top + 10;
                 tooltip
-                    .style('top', (event.pageY - 10) + 'px')
-                    .style('left', (event.pageX + 10) + 'px');
+                    .style('left', `${tooltipX}px`)
+                    .style('top', `${tooltipY}px`);
             })
             .on('mouseout', function () {
                 d3.select(this).attr('opacity', 1);
@@ -133,12 +139,12 @@ export default function BudgetComparisonChart({ data }) {
             .append('text')
             .attr('class', 'budget-label')
             .attr('x', d => x(d.budget) + 5)
-            .attr('y', d => y(d.category) + y.bandwidth() / 4)
+            .attr('y', d => y(d.category)! + y.bandwidth() / 2)
             .attr('dy', '0.35em')
             .style('font-size', '11px')
             .style('fill', '#64748b')
             .style('opacity', 0)
-            .text(d => `$${d.budget.toLocaleString()}`)
+            .text(d => `${symbol}${d.budget.toLocaleString()}`)
             .transition()
             .delay(1000)
             .duration(400)
@@ -150,13 +156,13 @@ export default function BudgetComparisonChart({ data }) {
             .append('text')
             .attr('class', 'spent-label')
             .attr('x', d => x(d.spent) + 5)
-            .attr('y', d => y(d.category) + y.bandwidth() / 4)
+            .attr('y', d => y(d.category)! + y.bandwidth() / 2)
             .attr('dy', '0.35em')
             .style('font-size', '11px')
             .style('font-weight', 'bold')
             .style('fill', d => d.spent > d.budget ? '#ef4444' : '#10b981')
             .style('opacity', 0)
-            .text(d => `$${d.spent.toLocaleString()}`)
+            .text(d => `${symbol}${d.spent.toLocaleString()}`)
             .transition()
             .delay(1000)
             .duration(400)

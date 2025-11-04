@@ -271,13 +271,25 @@ import { StatCardSkeleton } from "@/components/dashboard/StatCardSkeleton";
 import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
 
 import { useDashboardStore } from "@/store/dashboardStore";
+import { useCurrency } from '@/lib/currency';
+import { useAuthStore } from '@/store/authStore';
+import { userAPI } from '@/lib/api';
 
 export default function Dashboard() {
     const { summary, isLoading, error, fetchSummary, fetchRecentTransactions, recentTransactions } = useDashboardStore();
+    const { getProfile } = userAPI;
+    const { setUser } = useAuthStore();
+    const { symbol } = useCurrency();
 
     useEffect(() => {
         fetchSummary();
         fetchRecentTransactions();
+        const fetchProfile = async () =>{
+            const profile = await getProfile();
+            setUser(profile.data);
+        }
+
+        fetchProfile();
     }, [fetchSummary, fetchRecentTransactions]);
 
     if (error) {
@@ -314,10 +326,10 @@ export default function Dashboard() {
                         <h1 className="text-xl font-semibold">Dashboard</h1>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        {/* <Button variant="outline" size="sm">
                             <Filter className="h-4 w-4 mr-2" />
                             Filter
-                        </Button>
+                        </Button> */}
                         <Button variant="outline" size="sm">
                             <Download className="h-4 w-4 mr-2" />
                             Export
@@ -345,7 +357,7 @@ export default function Dashboard() {
                                 <>
                                     <StatCard
                                         title="Total Income"
-                                        amount={`$${summary?.summary?.total_income?.toLocaleString() || 0}`}
+                                        amount={`${symbol}${summary?.summary?.total_income?.toLocaleString() || 0}`}
                                         change="+20.1%"
                                         changeType="positive"
                                         icon={TrendingUp}
@@ -353,7 +365,7 @@ export default function Dashboard() {
                                     />
                                     <StatCard
                                         title="Total Expenses"
-                                        amount={`$${summary?.summary?.total_expenses?.toLocaleString() || 0}`}
+                                        amount={`${symbol}${summary?.summary?.total_expenses?.toLocaleString() || 0}`}
                                         change="+8.2%"
                                         changeType="negative"
                                         icon={TrendingDown}
@@ -361,7 +373,7 @@ export default function Dashboard() {
                                     />
                                     <StatCard
                                         title="Balance"
-                                        amount={`$${summary?.summary?.balance?.toLocaleString() || 0}`}
+                                        amount={`${symbol}${summary?.summary?.balance?.toLocaleString() || 0}`}
                                         change="+12.5%"
                                         changeType="positive"
                                         icon={Wallet}

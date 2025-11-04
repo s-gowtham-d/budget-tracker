@@ -399,6 +399,7 @@ import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
 import { useTransactionStore } from "@/store/transactionStore";
 // import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner"
+import { useDashboardStore } from '@/store/dashboardStore';
 
 
 function Pagination({ currentPage, totalPages, onPageChange }: any) {
@@ -444,6 +445,8 @@ export default function Transactions() {
         setPage,
     } = useTransactionStore();
 
+    const {fetchSummary} = useDashboardStore()
+
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -454,7 +457,11 @@ export default function Transactions() {
     useEffect(() => {
         fetchTransactions();
         fetchCategories();
-    }, []);
+    }, [fetchTransactions, fetchCategories]);
+
+    useEffect(()=>{
+            fetchSummary(); 
+    }, [transactions,fetchSummary])
 
     const handleFilterChange = (newFilters: any) => {
         setFilters(newFilters);
