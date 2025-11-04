@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,7 @@ import {
 import { CalendarIcon, X, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useTransactionStore } from "@/store/transactionStore";
 
 export default function TransactionFilters({ onFilterChange, onReset }) {
     const [filters, setFilters] = useState({
@@ -31,8 +31,25 @@ export default function TransactionFilters({ onFilterChange, onReset }) {
         endDate: null,
     });
 
-    const handleFilterChange = (key, value) => {
+    const { categories } = useTransactionStore();
+
+    const filteredCategories = useMemo(() => {
+        if (filters.type === "income") {
+        return categories.filter((c) => c.type === "income");
+        } else if (filters.type === "expense") {
+        return categories.filter((c) => c.type === "expense");
+        }
+        return categories;
+    }, [categories, filters.type]);
+
+    const handleFilterChange = (key: string, value: any) => {
         const newFilters = { ...filters, [key]: value };
+
+        // Reset category when switching type
+        if (key === "type") {
+        newFilters.category = "all";
+        }
+
         setFilters(newFilters);
         onFilterChange(newFilters);
     };
@@ -50,18 +67,18 @@ export default function TransactionFilters({ onFilterChange, onReset }) {
         onReset();
     };
 
-    const categories = [
-        'Food & Dining',
-        'Transportation',
-        'Shopping',
-        'Entertainment',
-        'Bills & Utilities',
-        'Healthcare',
-        'Education',
-        'Salary',
-        'Freelance',
-        'Business',
-    ];
+    // const categories = [
+    //     'Food & Dining',
+    //     'Transportation',
+    //     'Shopping',
+    //     'Entertainment',
+    //     'Bills & Utilities',
+    //     'Healthcare',
+    //     'Education',
+    //     'Salary',
+    //     'Freelance',
+    //     'Business',
+    // ];
 
     return (
         <Card>
@@ -111,9 +128,9 @@ export default function TransactionFilters({ onFilterChange, onReset }) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Categories</SelectItem>
-                            {categories.map((cat) => (
-                                <SelectItem key={cat} value={cat}>
-                                    {cat}
+                           {filteredCategories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.name}>
+                                {cat.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>

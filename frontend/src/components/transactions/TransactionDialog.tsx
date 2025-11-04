@@ -243,30 +243,31 @@ export default function TransactionDialog({
 
                     {/* Category */}
                     <div className="space-y-2">
-                        <Label>Category</Label>
-                        <Select
-                            onValueChange={(value) => setValue('category', value)}
-                            defaultValue={transaction?.category.toString()}
-                        >
-                            <SelectTrigger className={cn(errors.category && 'border-red-500')}>
-                                <SelectValue placeholder="Select category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {filteredCategories.map((category) => (
-                                    <SelectItem key={category.id} value={category.id.toString()}>
-                                        <span className="flex items-center gap-2">
-                                            <span>{category.icon}</span>
-                                            <span>{category.name}</span>
-                                        </span>
-                                    </SelectItem>
-                                ))}
+                    <Label>Category</Label>
+                    <Select
+                        value={watch("category") || ""} 
+                        onValueChange={(value) => setValue("category", value)}
+                    >
+                        <SelectTrigger className={cn(errors.category && "border-red-500")}>
+                        <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        {filteredCategories.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                            <span className="flex items-center gap-2">
+                                <span>{category.icon}</span>
+                                <span>{category.name}</span>
+                            </span>
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
 
-                            </SelectContent>
-                        </Select>
-                        {errors.category && (
-                            <p className="text-sm text-red-500">{errors.category.message}</p>
-                        )}
+                    {errors.category && (
+                        <p className="text-sm text-red-500">{errors.category.message}</p>
+                    )}
                     </div>
+
 
                     {/* Date */}
                     <div className="space-y-2">

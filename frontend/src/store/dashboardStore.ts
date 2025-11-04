@@ -1,33 +1,3 @@
-// import { create } from 'zustand';
-// import type { DashboardSummary } from '@/types';
-// import { dashboardAPI } from '@/lib/api';
-
-// interface DashboardState {
-//     summary: DashboardSummary | null;
-//     isLoading: boolean;
-//     error: string | null;
-//     fetchSummary: () => Promise<void>;
-// }
-
-// export const useDashboardStore = create<DashboardState>((set) => ({
-//     summary: null,
-//     isLoading: false,
-//     error: null,
-
-//     fetchSummary: async () => {
-//         set({ isLoading: true, error: null });
-//         try {
-//             const response = await dashboardAPI.getSummary();
-//             set({ summary: response.data, isLoading: false });
-//         } catch (error: any) {
-//             set({
-//                 error: error.message || 'Failed to fetch dashboard summary',
-//                 isLoading: false
-//             });
-//         }
-//     },
-// }));
-
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { dashboardAPI } from "@/lib/api";
@@ -70,7 +40,7 @@ interface DashboardState {
 
 export const useDashboardStore = create<DashboardState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       summary: null,
       recentTransactions: [],
       isLoading: false,
@@ -112,7 +82,7 @@ export const useDashboardStore = create<DashboardState>()(
         }),
     }),
     {
-      name: "dashboard-store", // key name in localStorage
+      name: "dashboard-store",
       version: 1,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({

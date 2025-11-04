@@ -1,36 +1,3 @@
-// import { create } from 'zustand';
-// import type { BudgetState, Budget } from '@/types';
-// import { budgetAPI } from '@/lib/api';
-
-// export const useBudgetStore = create<BudgetState>((set) => ({
-//     budgets: [],
-//     isLoading: false,
-
-//     fetchBudgets: async () => {
-//         set({ isLoading: true });
-//         try {
-//             const response = await budgetAPI.getAll();
-//             set({
-//                 budgets: response.data,
-//                 isLoading: false,
-//             });
-//         } catch (error) {
-//             console.error('Error fetching budgets:', error);
-//             set({ isLoading: false });
-//         }
-//     },
-
-//     updateBudget: (category: string, amount: number) => {
-//         set((state) => ({
-//             budgets: state.budgets.map((b) =>
-//                 b.category === category ? { ...b, budget: amount } : b
-//             ),
-//         }));
-
-//         // API call
-//         budgetAPI.update(category, amount).catch(console.error);
-//     },
-// }));
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Budget } from "@/types";
@@ -123,11 +90,11 @@ export const useBudgetStore = create<BudgetState>()(
       clearAll: () => set({ budgets: [], comparison: [], error: null }),
     }),
     {
-      name: "budget-store", // key in localStorage
+      name: "budget-store",
       partialize: (state) => ({
         budgets: state.budgets,
         comparison: state.comparison,
-      }), // only persist these fields
+      }),
       onRehydrateStorage: () => (state) => {
         console.log("✅ Budget store rehydrated", state);
       },
