@@ -114,12 +114,13 @@ api.interceptors.response.use(
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (refreshToken) {
                     // Try to refresh token
-                    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+                    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
                         refresh: refreshToken,
                     });
 
-                    const { access } = response.data;
+                    const { access, refresh } = response.data;
                     localStorage.setItem('access_token', access);
+                    localStorage.setItem('refresh_token', refresh);
 
                     // Retry original request with new token
                     if (originalRequest.headers) {
@@ -131,7 +132,7 @@ api.interceptors.response.use(
                 // Refresh failed, logout user
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
-                window.location.href = '/auth';
+                window.location.href = '/login';
                 return Promise.reject(refreshError);
             }
         }
@@ -158,20 +159,51 @@ export const authAPI = {
 
     // Refresh access token
     refresh: (refresh: string) =>
-        api.post('/auth/refresh/', { refresh }),
+        api.post('/auth/token/refresh/', { refresh }),
 
     // Get user profile
-    getProfile: () => api.get('/auth/profile/'),
+    // getProfile: () => api.get('/auth/profile/'),
 
-    // Update profile
-    updateProfile: (data: any) => api.put('/auth/profile/', data),
+    // // Update profile
+    // updateProfile: (data: any) => api.put('/auth/profile/', data),
+
+    // // Change password
+    // changePassword: (data: {
+    //     old_password: string;
+    //     new_password: string;
+    //     new_password_confirm: string;
+    // }) => api.put('/auth/password/change/', data),
+};
+
+export const userAPI = {
+    // Get current user profile
+    getProfile: () => api.get('/auth/users/profile/'),
+
+    // Update user profile
+    updateProfile: (data: any) => {
+        // Handle FormData for avatar upload
+        if (data instanceof FormData) {
+            return api.patch('/auth/users/profile/', data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        }
+        return api.patch('/auth/users/profile/', data);
+    },
 
     // Change password
     changePassword: (data: {
         old_password: string;
         new_password: string;
         new_password_confirm: string;
-    }) => api.post('/auth/password/change/', data),
+    }) => api.post('/auth/users/change-password/', data),
+
+    // Export user data
+    exportData: () => api.get('/auth/users/export-data/'),
+
+    // Delete account
+    deleteAccount: () => api.delete('/auth/users/profile/'),
 };
 
 export const transactionAPI = {
