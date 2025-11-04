@@ -1,37 +1,3 @@
-# # Django & DRF
-# Django
-# djangorestframework
-# django-cors-headers
-
-# # Authentication & JWT
-# djangorestframework-simplejwt
-# djoser
-
-# # Database
-# psycopg2-binary  # For PostgreSQL (optional)
-
-# # Environment Variables
-# python-decouple
-# # Security
-# django-environ
-
-# # Utilities
-# Pillow  # For image handling
-# python-dateutil
-
-# # Development
-# django-extensions
-# django-debug-toolbar
-
-# # API Documentation
-# drf-yasg  # Swagger/OpenAPI
-
-# # Testing
-# pytest
-# pytest-django
-# factory-boy
-# faker
-
 anyio==4.8.0
 argcomplete==3.6.2
 asgiref==3.10.0
