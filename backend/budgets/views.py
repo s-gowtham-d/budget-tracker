@@ -30,7 +30,6 @@ class BudgetViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def comparison(self, request):
         """Get budget vs actual comparison"""
-        # Get current month by default
         month_param = request.query_params.get('month')
         if month_param:
             try:
@@ -81,3 +80,35 @@ class BudgetViewSet(viewsets.ModelViewSet):
             'percentage_used': (float(total_spent) / float(total_budget) * 100) if total_budget > 0 else 0,
             'categories': BudgetSerializer(budgets, many=True).data
         })
+    
+    @action(detail=False, methods=['get'])
+    def available_months(self, request):
+        """Return only months that have budget data or the current month"""
+        user = request.user
+        now = datetime.now()
+        current_month = datetime(now.year, now.month, 1).date()
+
+        # Get distinct months from budgets
+        months_with_data = (
+            Budget.objects.filter(user=user)
+            .values_list("month", flat=True)
+            .distinct()
+        )
+
+        # Always include current month
+        all_months = set(months_with_data)
+        all_months.add(current_month)
+
+        # Sort months (latest first)
+        sorted_months = sorted(all_months, reverse=True)
+
+        # Format for frontend
+        formatted_months = [
+            {
+                "value": m.strftime("%Y-%m"),
+                "label": m.strftime("%B %Y"),
+            }
+            for m in sorted_months
+        ]
+
+        return Response(formatted_months)

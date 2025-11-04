@@ -3,21 +3,25 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/lib/currency';
+import { BarChart3 } from 'lucide-react';
 
 export default function IncomeExpenseChart({ data }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
     const { symbol } = useCurrency();
 
+    const isEmpty = data.reduce((acc, curr) => acc + curr.income + curr.expense, 0) === 0;
+
+
     useEffect(() => {
-        if (!data || data.length === 0) return;
+        if (isEmpty) return;
 
         // Clear previous chart
         d3.select(svgRef.current).selectAll("*").remove();
 
         // Get container dimensions
         const container = containerRef.current;
-        const containerWidth = container.clientWidth;
+        const containerWidth = container?.clientWidth;
         const containerHeight = 400;
 
         // Set up dimensions and margins
@@ -206,9 +210,17 @@ export default function IncomeExpenseChart({ data }) {
                 <CardDescription>Last 6 months comparison</CardDescription>
             </CardHeader>
             <CardContent>
-                <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
-                    <svg ref={svgRef} style={{ width: '100%', height: '400px' }}></svg>
-                </div>
+                {isEmpty ? (
+                    <div className="h-[400px] flex flex-col items-center justify-center text-center text-muted-foreground">
+                        <BarChart3 className="h-12 w-12 mb-3 opacity-60" />
+                        <p className="font-medium text-sm">No data available</p>
+                        <p className="text-xs">Start by adding income and expense transactions to visualize your trends.</p>
+                    </div>
+                ) : (
+                    <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+                        <svg ref={svgRef} style={{ width: '100%', height: '400px' }}></svg>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

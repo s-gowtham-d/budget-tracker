@@ -159,6 +159,19 @@ def dashboard_summary(request):
     
     monthly_data.reverse()
     
+    # Compare with previous month
+    if len(monthly_data) >= 2:
+        current_income = monthly_data[-1]['income']
+        current_expense = monthly_data[-1]['expense']
+        previous_income = monthly_data[-2]['income']
+        previous_expense = monthly_data[-2]['expense']
+        
+        income_change = ((current_income - previous_income) / previous_income * 100) if previous_income > 0 else 0
+        expense_change = ((current_expense - previous_expense) / previous_expense * 100) if previous_expense > 0 else 0
+        balance_change = (((current_income - current_expense) - (previous_income - previous_expense)) / abs(previous_income - previous_expense) * 100) if (previous_income or previous_expense) else 0
+    else:
+        income_change = expense_change = balance_change = 0
+
     # Expense breakdown by category
     expense_by_category = Transaction.objects.filter(
         user=user,
@@ -183,6 +196,9 @@ def dashboard_summary(request):
             'total_expenses': float(stats['total_expenses']),
             'balance': float(stats['balance']),
             'transaction_count': stats['transaction_count'],
+            'income_change': round(income_change, 2),
+            'expense_change': round(expense_change, 2),
+            'balance_change': round(balance_change, 2),
         },
         'budget': {
             'total_budget': float(total_budget),

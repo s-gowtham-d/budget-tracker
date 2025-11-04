@@ -80,11 +80,23 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await authAPI.register(data);
-          const { access, refresh, user } = response.data;
+          const { access, refresh } = response.data;
 
           // Store tokens
           localStorage.setItem("access_token", access);
           localStorage.setItem("refresh_token", refresh);
+
+          const profileResponse = await userAPI.getProfile();
+          const user = profileResponse.data;
+
+          set({
+            user,
+            accessToken: access,
+            refreshToken: refresh,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
 
           set({
             user,

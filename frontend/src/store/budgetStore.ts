@@ -4,11 +4,17 @@ import type { Budget } from "@/types";
 import { budgetAPI } from "@/lib/api";
 import { AxiosError } from "axios";
 
+interface BudgetMonths {
+  value: string;
+  label: string;
+}
+
 interface BudgetState {
   budgets: Budget[];
   comparison: any[];
   isLoading: boolean;
   error: string | null;
+  budgetMonths: BudgetMonths[];
 
   fetchBudgets: (month?: string) => Promise<void>;
   fetchComparison: (month?: string) => Promise<void>;
@@ -16,6 +22,7 @@ interface BudgetState {
   createBudget: (data: any) => Promise<void>;
   clearError: () => void;
   clearAll: () => void;
+  fetchBudgetMonths: () => void;
 }
 
 export const useBudgetStore = create<BudgetState>()(
@@ -25,6 +32,7 @@ export const useBudgetStore = create<BudgetState>()(
       comparison: [],
       isLoading: false,
       error: null,
+      budgetMonths: [],
 
       fetchBudgets: async (month?: string) => {
         set({ isLoading: true, error: null });
@@ -81,6 +89,25 @@ export const useBudgetStore = create<BudgetState>()(
             error:
               axiosError.response?.data?.message || "Failed to create budget",
             isLoading: false,
+          });
+          throw error;
+        }
+      },
+      fetchBudgetMonths: async () => {
+        set({ isLoading: true, error: null })
+        try {
+          const months = await budgetAPI.getBudgetMonths();
+          set({
+            isLoading: false,
+            budgetMonths: months.data
+
+          })
+        } catch (error) {
+          const axiosError = error as AxiosError<any>;
+          set({
+            error:
+              axiosError.response?.data?.message || "Failed to get budget Months",
+            isLoading: false
           });
           throw error;
         }

@@ -250,6 +250,7 @@ export function SignupForm({ className = "", onSuccess }: SignupFormProps) {
       await registerUser(data);
 
       // Success - navigate to dashboard
+      localStorage.setItem("showOnboarding", "true");
       if (onSuccess) {
         onSuccess();
       } else {

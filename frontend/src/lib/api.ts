@@ -135,6 +135,7 @@ export const budgetAPI = {
   comparison: (month?: string) =>
     api.get("/budgets/comparison/", { params: { month } }),
   status: () => api.get("/budgets/status/"),
+  getBudgetMonths: () => api.get("/budgets/available_months/")
 };
 
 export const dashboardAPI = {

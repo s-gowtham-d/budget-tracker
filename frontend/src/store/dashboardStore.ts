@@ -16,11 +16,17 @@ interface DashboardSummary {
     total_income: number;
     total_expenses: number;
     balance: number;
+    transaction_count: number,
+    income_change: number,
+    expense_change: number,
+    balance_change: number
   };
   budget: {
     total_budget: number;
     total_spent: number;
     percentage_used: number;
+    month: string,
+    remaining: number,
   };
   monthly_data: any[];
   category_breakdown: any[];

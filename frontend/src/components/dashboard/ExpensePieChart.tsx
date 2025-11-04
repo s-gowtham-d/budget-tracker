@@ -3,11 +3,13 @@ import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCurrency } from '@/lib/currency';
+import { FileBarChart } from 'lucide-react';
 
 export default function ExpensePieChart({ data }) {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
-      const { symbol } = useCurrency();
+    const { symbol } = useCurrency();
+    const isEmpty = !data || data.length === 0;
 
 
     useEffect(() => {
@@ -185,28 +187,35 @@ export default function ExpensePieChart({ data }) {
                 <CardDescription>By category this month</CardDescription>
             </CardHeader>
             <CardContent>
-                <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
-                    <svg ref={svgRef} style={{ width: '100%', height: '400px' }}></svg>
-                </div>
-
-                {/* Legend */}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                    {data.map((item, index) => {
-                        const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#6b7280'];
-                        return (
-                            <div key={item.category} className="flex items-center gap-2">
-                                <div
-                                    className="h-3 w-3 rounded-full"
-                                    style={{ backgroundColor: colors[index % colors.length] }}
-                                />
-                                <span className="text-xs text-muted-foreground">
-                                    {item.category} ({symbol}{item.amount.toLocaleString()})
-                                </span>
-                            </div>
-                        );
-                    })}
-                </div>
+                {isEmpty ? (
+                    <div className="h-[400px] flex flex-col items-center justify-center text-center text-muted-foreground">
+                        <FileBarChart className="h-12 w-12 mb-3 opacity-60" />
+                        <p className="font-medium text-sm">No expenses yet</p>
+                        <p className="text-xs">Create a budget or add some transactions to see your expense breakdown.</p>
+                    </div>
+                ) : (
+                    <>
+                        <div ref={containerRef} style={{ position: 'relative', width: '100%' }}>
+                            <svg ref={svgRef} style={{ width: '100%', height: '400px' }}></svg>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-2">
+                            {data.map((item, index) => {
+                                const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ec4899', '#6b7280'];
+                                return (
+                                    <div key={item.category} className="flex items-center gap-2">
+                                        <div
+                                            className="h-3 w-3 rounded-full"
+                                            style={{ backgroundColor: colors[index % colors.length] }}
+                                        />
+                                        <span className="text-xs text-muted-foreground">
+                                            {item.category} ({symbol}{item.amount.toLocaleString()})
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </>
+                )}
             </CardContent>
-        </Card>
-    );
+        </Card>);
 }

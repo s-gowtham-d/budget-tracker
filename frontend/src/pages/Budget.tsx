@@ -681,7 +681,9 @@ export default function Budget() {
         fetchBudgets,
         fetchComparison,
         updateBudget,
-        createBudget
+        createBudget,
+        budgetMonths,
+        fetchBudgetMonths
     } = useBudgetStore();
 
     const { categories, fetchCategories } = useTransactionStore();
@@ -691,12 +693,14 @@ export default function Budget() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+
     const { symbol } = useCurrency();
 
     useEffect(() => {
         fetchBudgets(selectedMonth);
         fetchComparison(selectedMonth);
         fetchCategories();
+        fetchBudgetMonths();
     }, [selectedMonth]);
 
     const handleEditBudget = (category: any) => {
@@ -753,7 +757,7 @@ export default function Budget() {
                         <h1 className="text-xl font-semibold">Budget Management</h1>
                         {isLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
                     </div>
-                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    {/* <Select value={selectedMonth} onValueChange={setSelectedMonth}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue />
                         </SelectTrigger>
@@ -762,7 +766,20 @@ export default function Budget() {
                             <SelectItem value="2025-10">October 2025</SelectItem>
                             <SelectItem value="2025-09">September 2025</SelectItem>
                         </SelectContent>
+                    </Select> */}
+                    <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Select Month" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {budgetMonths.map((m) => (
+                                <SelectItem key={m.value} value={m.value}>
+                                    {m.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
                     </Select>
+
                     <Button onClick={() => setCreateDialogOpen(true)} className="ml-4">
                         + New Budget
                     </Button>
@@ -832,13 +849,13 @@ export default function Budget() {
                         </Card>
 
                         {/* Budget Comparison Chart */}
-                       {isLoading ? (
+                        {isLoading ? (
                             <div className="h-[500px] border rounded-lg flex items-center justify-center bg-card">
                                 <Loader2 className="h-8 w-8 animate-spin" />
                             </div>
-                            ) : comparison && comparison.length > 0 ? (
+                        ) : comparison && comparison.length > 0 ? (
                             <BudgetComparisonChart data={comparison} />
-                            ) : (
+                        ) : (
                             <div className="h-[400px] flex flex-col items-center justify-center border rounded-lg bg-card text-center text-muted-foreground">
                                 <PiggyBank className="h-10 w-10 mb-3 text-muted-foreground" />
                                 <p className="text-sm">No budget data available for this month.</p>
@@ -850,29 +867,29 @@ export default function Budget() {
                         {/* Category Budgets */}
                         <div>
                             <h2 className="text-xl font-semibold mb-4">Category Budgets</h2>
-                           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                            {isLoading ? (
-                                Array.from({ length: 6 }).map((_, i) => (
-                                <CategoryBudgetCard key={i} isLoading={true} />
-                                ))
-                            ) : budgets?.results?.length > 0 ? (
-                                budgets?.results.map((budget) => (
-                                <CategoryBudgetCard
-                                    key={budget.id}
-                                    category={budget}
-                                    onEdit={handleEditBudget}
-                                />
-                                ))
-                            ) : (
-                                <div className="col-span-full flex flex-col items-center justify-center p-10 border rounded-lg bg-card text-muted-foreground">
-                                <PiggyBank className="h-10 w-10 mb-3 text-muted-foreground" />
-                                <p className="text-sm font-medium">No budgets found for this month</p>
-                                <p className="text-xs mt-1 mb-3">Start by creating your first budget below</p>
-                                <Button onClick={() => setCreateDialogOpen(true)} variant="default">
-                                    + Create Budget
-                                </Button>
-                                </div>
-                            )}
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {isLoading ? (
+                                    Array.from({ length: 6 }).map((_, i) => (
+                                        <CategoryBudgetCard key={i} isLoading={true} />
+                                    ))
+                                ) : budgets?.results?.length > 0 ? (
+                                    budgets?.results.map((budget) => (
+                                        <CategoryBudgetCard
+                                            key={budget.id}
+                                            category={budget}
+                                            onEdit={handleEditBudget}
+                                        />
+                                    ))
+                                ) : (
+                                    <div className="col-span-full flex flex-col items-center justify-center p-10 border rounded-lg bg-card text-muted-foreground">
+                                        <PiggyBank className="h-10 w-10 mb-3 text-muted-foreground" />
+                                        <p className="text-sm font-medium">No budgets found for this month</p>
+                                        <p className="text-xs mt-1 mb-3">Start by creating your first budget below</p>
+                                        <Button onClick={() => setCreateDialogOpen(true)} variant="default">
+                                            + Create Budget
+                                        </Button>
+                                    </div>
+                                )}
                             </div>
 
                         </div>
