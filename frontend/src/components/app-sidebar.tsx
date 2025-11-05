@@ -542,8 +542,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="text-2xl font-bold">{format(totalBalance)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  <span className="text-emerald-500">+12.5%</span> from last month
+                  <span
+                    className={
+                      summary?.summary?.balance_change > 0
+                        ? "text-emerald-500" 
+                        : summary?.summary?.balance_change < 0
+                        ? "text-red-500"     
+                        : "text-gray-400"  
+                    }
+                  >
+                    {`${summary?.summary?.balance_change > 0 ? "+" : ""}${summary?.summary?.balance_change || 0}%`}
+                  </span>{" "}
+                  from last month
                 </p>
+
               </div>
             </div>
           </SidebarGroup>
