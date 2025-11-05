@@ -37,6 +37,7 @@ export const useBudgetStore = create<BudgetState>()(
       fetchBudgets: async (month?: string) => {
         set({ isLoading: true, error: null });
         try {
+          console.log(month);
           const response = await budgetAPI.getAll({ month });
           set({ budgets: response.data, isLoading: false });
         } catch (error) {
@@ -66,7 +67,7 @@ export const useBudgetStore = create<BudgetState>()(
         set({ isLoading: true, error: null });
         try {
           await budgetAPI.update(id, data);
-          await get().fetchBudgets();
+          await get().fetchBudgets(data.month.substring(0, 7));
         } catch (error) {
           const axiosError = error as AxiosError<any>;
           set({
@@ -94,20 +95,20 @@ export const useBudgetStore = create<BudgetState>()(
         }
       },
       fetchBudgetMonths: async () => {
-        set({ isLoading: true, error: null })
+        set({ isLoading: true, error: null });
         try {
           const months = await budgetAPI.getBudgetMonths();
           set({
             isLoading: false,
-            budgetMonths: months.data
-
-          })
+            budgetMonths: months.data,
+          });
         } catch (error) {
           const axiosError = error as AxiosError<any>;
           set({
             error:
-              axiosError.response?.data?.message || "Failed to get budget Months",
-            isLoading: false
+              axiosError.response?.data?.message ||
+              "Failed to get budget Months",
+            isLoading: false,
           });
           throw error;
         }

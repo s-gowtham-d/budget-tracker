@@ -69,22 +69,62 @@ function SidebarProvider({
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
+ const getInitialSidebarState = () => {
+    if (typeof document !== "undefined") {
+      const match = document.cookie.match(
+        new RegExp("(^| )" + SIDEBAR_COOKIE_NAME + "=([^;]+)")
+      )
+      if (match) {
+        return match[2] === "true"
+      }
+    }
+    return defaultOpen
+  }
+
+  const [_open, _setOpen] = React.useState<boolean>(getInitialSidebarState)
+
+  // const [_open, _setOpen] = React.useState(defaultOpen)
+  // const open = openProp ?? _open
+  // const setOpen = React.useCallback(
+  //   (value: boolean | ((value: boolean) => boolean)) => {
+  //     const openState = typeof value === "function" ? value(open) : value
+  //     if (setOpenProp) {
+  //       setOpenProp(openState)
+  //     } else {
+  //       _setOpen(openState)
+  //     }
+
+  //     // This sets the cookie to keep the sidebar state.
+  //     document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+  //   },
+  //   [setOpenProp, open]
+  // )
+
+   const open = openProp ?? _open
+
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === "function" ? value(open) : value
-      if (setOpenProp) {
-        setOpenProp(openState)
-      } else {
-        _setOpen(openState)
-      }
 
-      // This sets the cookie to keep the sidebar state.
+      if (setOpenProp) setOpenProp(openState)
+      else _setOpen(openState)
+
+      // persist to cookie + localStorage
       document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      localStorage.setItem(SIDEBAR_COOKIE_NAME, String(openState))
     },
     [setOpenProp, open]
   )
+
+   React.useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === SIDEBAR_COOKIE_NAME && e.newValue !== null) {
+        _setOpen(e.newValue === "true")
+      }
+    }
+    window.addEventListener("storage", handleStorage)
+    return () => window.removeEventListener("storage", handleStorage)
+  }, [])
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {

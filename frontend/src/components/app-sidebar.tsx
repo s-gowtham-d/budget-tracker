@@ -451,7 +451,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useAuthStore();
   const { theme, setTheme } = useTheme();
   const { open } = useSidebar();
-  const { symbol, format } = useCurrency();
+  const { format } = useCurrency();
   const {summary} = useDashboardStore();
 
   const isActive = (path: string) => location.pathname === path;
@@ -607,10 +607,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <User className="mr-2 h-4 w-4" />
                     Profile Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  {/* <DropdownMenuItem>
                     <CreditCard className="mr-2 h-4 w-4" />
                     Billing
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem>
                     <Bell className="mr-2 h-4 w-4" />
                     Notifications

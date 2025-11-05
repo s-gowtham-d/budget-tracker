@@ -12,12 +12,12 @@ class User(AbstractUser, TimeStampedModel):
     phone = models.CharField(max_length=20, null=True, blank=True)
     
     # Preferences
-    currency = models.CharField(max_length=3, default='USD')
-    language = models.CharField(max_length=5, default='en')
+    currency = models.CharField(max_length=3, default='')
+    language = models.CharField(max_length=5, default='')
     theme = models.CharField(
         max_length=10,
         choices=[('light', 'Light'), ('dark', 'Dark'), ('system', 'System')],
-        default='system'
+        default=''
     )
     
     # Notifications

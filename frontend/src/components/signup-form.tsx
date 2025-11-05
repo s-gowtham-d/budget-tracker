@@ -247,6 +247,7 @@ export function SignupForm({ className = "", onSuccess }: SignupFormProps) {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
+      console.log(data);
       await registerUser(data);
 
       // Success - navigate to dashboard

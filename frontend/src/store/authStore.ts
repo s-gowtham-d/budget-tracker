@@ -79,7 +79,9 @@ export const useAuthStore = create<AuthState>()(
       register: async (data: RegisterData) => {
         set({ isLoading: true, error: null });
         try {
+          console.log(data);
           const response = await authAPI.register(data);
+          console.log(response.data);
           const { access, refresh } = response.data;
 
           // Store tokens

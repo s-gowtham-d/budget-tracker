@@ -11,6 +11,7 @@ import SignupPage from "./pages/Signup";
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "./providers/ThemeProvider";
 import "./App.css";
+import { Onboarding } from './components/onboarding/Onboarding';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -40,6 +41,8 @@ function App() {
     <ThemeProvider>
       <Router>
         <Toaster />
+                  <Onboarding/>
+
         <Routes>
           <Route
             path="/login"

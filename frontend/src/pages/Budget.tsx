@@ -421,7 +421,8 @@ import {
 } from "@/components/ui/dialog";
 import {
     PiggyBank, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
-    Edit, Save, Loader2, AlertCircle
+    Edit, Save, Loader2, AlertCircle,
+    CalendarIcon
 } from "lucide-react";
 import BudgetComparisonChart from "@/components/budget/BudgetComparisonChart";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -429,6 +430,9 @@ import { useBudgetStore } from "@/store/budgetStore";
 import { toast } from "sonner"
 import { useTransactionStore } from '@/store/transactionStore';
 import { useCurrency } from '@/lib/currency';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Calendar } from '@/components/ui/calendar';
 
 function CategoryBudgetCard({ category, onEdit, isLoading }: any) {
     const { symbol } = useCurrency();
@@ -573,102 +577,148 @@ function EditBudgetDialog({ open, onOpenChange, category, onSave, isLoading }: a
     );
 }
 
+
 function CreateBudgetDialog({ open, onOpenChange, onSave, isLoading, categories, existingCategories }: any) {
-    const [amount, setAmount] = useState('');
-    const [category, setCategory] = useState('');
-    const [month, setMonth] = useState(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
-    const { symbol } = useCurrency();
+  const [amount, setAmount] = useState('');
+  const [category, setCategory] = useState('');
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1));
+  const [year, setYear] = useState(String(new Date().getFullYear()));
+  const { symbol } = useCurrency();
 
-    const handleSave = () => {
-        if (!amount || !category) return;
-        onSave({
-            amount: parseFloat(amount),
-            category: parseInt(category),
-            month: `${month}-01`
-        });
-        setAmount('');
-        setCategory('');
-        setMonth(`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`);
-    };
+  const handleSave = () => {
+    if (!amount || !category || !month || !year) return;
 
-    return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add New Budget</DialogTitle>
-                    <DialogDescription>
-                        Create a new monthly budget for a category.
-                    </DialogDescription>
-                </DialogHeader>
+    onSave({
+      amount: parseFloat(amount),
+      category: parseInt(category),
+      month: `${year}-${String(month).padStart(2, '0')}`,
+    });
 
-                <div className="space-y-4 py-4">
-                    {/* Category Selector */}
-                    <div className="space-y-2">
-                        <Label>Category</Label>
-                        <Select value={category} onValueChange={setCategory}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {categories?.filter((c: any) => c.type === 'expense' && !existingCategories?.includes(c.id)).map((c: any) => (
-                                    <SelectItem key={c.id} value={String(c.id)}>
-                                        {c.icon} {c.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+    setAmount('');
+    setCategory('');
+    setMonth(String(new Date().getMonth() + 1));
+    setYear(String(new Date().getFullYear()));
+  };
 
-                    {/* Month Selector */}
-                    <div className="space-y-2">
-                        <Label>Month</Label>
-                        <Select value={month} onValueChange={setMonth}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="2025-11">November 2025</SelectItem>
-                                <SelectItem value="2025-10">October 2025</SelectItem>
-                                <SelectItem value="2025-09">September 2025</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+  // Generate years (e.g., current year ± 5 years)
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
-                    {/* Amount Input */}
-                    <div className="space-y-2">
-                        <Label>Budget Amount ({symbol})</Label>
-                        <Input
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="0.00"
-                            step="0.01"
-                            disabled={isLoading}
-                        />
-                    </div>
-                </div>
+  const months = [
+    { value: '1', label: 'January' },
+    { value: '2', label: 'February' },
+    { value: '3', label: 'March' },
+    { value: '4', label: 'April' },
+    { value: '5', label: 'May' },
+    { value: '6', label: 'June' },
+    { value: '7', label: 'July' },
+    { value: '8', label: 'August' },
+    { value: '9', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' },
+  ];
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSave} disabled={isLoading || !category || !amount}>
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="h-4 w-4 mr-2" />
-                                Save Budget
-                            </>
-                        )}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add New Budget</DialogTitle>
+          <DialogDescription>
+            Choose a month and category for your budget.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {/* Category */}
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories
+                  ?.filter((c: any) => c.type === 'expense' && !existingCategories?.includes(c.id))
+                  .map((c: any) => (
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.icon} {c.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Month and Year Selection */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Month</Label>
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Year</Label>
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Amount */}
+          <div className="space-y-2">
+            <Label>Budget Amount ({symbol})</Label>
+            <Input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              step="0.01"
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} disabled={isLoading || !category || !amount}>
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save Budget
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 
@@ -710,6 +760,7 @@ export default function Budget() {
 
     const handleSaveBudget = async (updatedCategory: any) => {
         try {
+            console.log(updatedCategory);
             await updateBudget(updatedCategory.id, { ...updatedCategory });
             toast.success("Budget updated successfully");
             //   toast({
@@ -734,6 +785,7 @@ export default function Budget() {
             setCreateDialogOpen(false);
             fetchBudgets(selectedMonth);
             fetchComparison(selectedMonth);
+            fetchBudgetMonths();
         } catch (err) {
             toast.error("Failed to create budget");
         }
