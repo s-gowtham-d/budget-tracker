@@ -110,34 +110,27 @@ export const useAuthStore = create<AuthState>()(
           });
         } catch (error) {
           const axiosError = error as AxiosError<any>;
-
-          // Handle different error formats
           let errorMessage = "Registration failed";
 
           if (axiosError.response?.data) {
             const data = axiosError.response.data;
 
-            // Handle field-specific errors
-            if (data.email) {
-              errorMessage = Array.isArray(data.email)
-                ? data.email[0]
-                : data.email;
-            } else if (data.username) {
-              errorMessage = Array.isArray(data.username)
-                ? data.username[0]
-                : data.username;
-            } else if (data.password) {
-              errorMessage = Array.isArray(data.password)
-                ? data.password[0]
-                : data.password;
-            } else if (data.non_field_errors) {
-              errorMessage = Array.isArray(data.non_field_errors)
-                ? data.non_field_errors[0]
-                : data.non_field_errors;
-            } else if (data.detail) {
-              errorMessage = data.detail;
-            } else if (data.message) {
+            if (data.details && typeof data.details === "object") {
+              // Flatten all detail messages into one readable string
+              const messages = Object.entries(data.details)
+                .map(
+                  ([field, messages]) =>
+                    `${field}: ${(messages as string[]).join(", ")}`
+                )
+                .join(" | ");
+
+              errorMessage = messages;
+            } else if (data.message && typeof data.message === "string") {
+              // Fallback to generic message if details not available
               errorMessage = data.message;
+            } else if (typeof data === "string") {
+              // Some APIs return plain string
+              errorMessage = data;
             }
           }
 
@@ -146,6 +139,7 @@ export const useAuthStore = create<AuthState>()(
             error: errorMessage,
             isAuthenticated: false,
           });
+
           throw new Error(errorMessage);
         }
       },
