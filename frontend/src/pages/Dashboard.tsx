@@ -1,3 +1,5 @@
+
+
 import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -34,6 +36,9 @@ export default function Dashboard() {
     const { setTheme } = useTheme();
 
     const navigate = useNavigate();
+
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [showOnboarding, setShowOnboarding] = useState(false);
 
     useEffect(() => {
         const initDashboard = async () => {
