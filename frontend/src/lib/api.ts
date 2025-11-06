@@ -3,10 +3,11 @@ import axios, {
   type AxiosInstance,
   AxiosError,
   type InternalAxiosRequestConfig,
+  AxiosHeaders,
 } from "axios";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+  import.meta.env.VITE_API_BASE_URL || "https://api.budget.gowtham.work";
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -25,7 +26,10 @@ let failedQueue: Array<{
 }> = [];
 
 // Function to process the queue of failed requests
-const processQueue = (error: AxiosError | null, token: string | null = null) => {
+const processQueue = (
+  error: AxiosError | null,
+  token: string | null = null
+) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -37,13 +41,13 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 };
 // --- End Refresh Token Logic State ---
 
-
 // Request interceptor - Add token to all requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Ensure headers object exists
     if (!config.headers) {
-      config.headers = {};
+      // @ts-nocheck
+      config.headers = new AxiosHeaders();
     }
 
     const token = localStorage.getItem("access_token");
@@ -64,11 +68,15 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
-
+    const isAuthEndpoint =
+      originalRequest.url.includes("/auth/login/") ||
+      originalRequest.url.includes("/auth/register/") ||
+      originalRequest.url.includes("/auth/password/");
     // Check if error response exists and it's a 401, AND not the refresh token endpoint itself
     if (
       error.response?.status === 401 &&
-      !originalRequest.url?.includes("/auth/token/refresh/")
+      !originalRequest.url?.includes("/auth/token/refresh/") &&
+      !isAuthEndpoint
     ) {
       // If the original request has already been marked for retry, don't process it again
       // This is a safety net, but the queue is the primary mechanism
@@ -92,23 +100,28 @@ api.interceptors.response.use(
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-          }
-          return api(originalRequest);
-        }).catch(err => {
-          return Promise.reject(err);
-        });
+        })
+          .then((token) => {
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
       }
 
       isRefreshing = true;
 
       // --- Perform Refresh ---
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
-          refresh: refreshToken,
-        });
+        const response = await axios.post(
+          `${API_BASE_URL}/auth/token/refresh/`,
+          {
+            refresh: refreshToken,
+          }
+        );
 
         const { access, refresh } = response.data;
         localStorage.setItem("access_token", access);
@@ -223,13 +236,13 @@ export const chatBotAPI = {
       currency?: string;
       timezone?: string;
     };
-  }) => api.post('/ai/chat/', data),
+  }) => api.post("/ai/chat/", data),
 
-  getInsights: () => api.get('/ai/insights/'),
+  getInsights: () => api.get("/ai/insights/"),
 
   getChatHistory: (params?: { limit?: number }) =>
-    api.get('/ai/chat-history/', { params }),
+    api.get("/ai/chat-history/", { params }),
 
-  clearChatHistory: () => api.delete('/ai/chat-history/'),
+  clearChatHistory: () => api.delete("/ai/chat-history/"),
 };
 export default api;

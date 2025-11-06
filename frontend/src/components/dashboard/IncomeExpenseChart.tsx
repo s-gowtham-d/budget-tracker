@@ -21,6 +21,7 @@ export default function IncomeExpenseChart({ data }) {
 
         // Get container dimensions
         const container = containerRef.current;
+        //@ts-nocheck
         const containerWidth = container?.clientWidth;
         const containerHeight = 400;
 
@@ -102,6 +103,7 @@ export default function IncomeExpenseChart({ data }) {
             .attr('transform', d => `translate(${x0(d.month)},0)`);
 
         // Income bars
+        // @ts-nocheck
         monthGroups.append('rect')
             .attr('x', x1('income'))
             .attr('y', height)

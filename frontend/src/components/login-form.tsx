@@ -312,7 +312,7 @@ export function LoginForm({ className = "", onSuccess }: LoginFormProps) {
           <p className="text-xs font-medium mb-2">Demo Credentials</p>
           <div className="space-y-1 text-xs text-muted-foreground">
             <p><span className="font-medium">Email:</span> demo@budgettracker.com</p>
-            <p><span className="font-medium">Password:</span> demo123</p>
+            <p><span className="font-medium">Password:</span> Demo@123</p>
           </div>
         </div>
 
