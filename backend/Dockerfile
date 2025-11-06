@@ -41,7 +41,7 @@ RUN mkdir -p /app/static /app/staticfiles /app/media
 # Collect static files
 RUN python manage.py collectstatic --noinput --clear || true
 
-EXPOSE 8000
+EXPOSE 8053
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1

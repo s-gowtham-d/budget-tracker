@@ -8,11 +8,11 @@ services:
         - linux/amd64
         - linux/arm64
     container_name: budget-backend1
-    image: gowthamac/budget:be-v2
+    image: gowthamac/budget1:be-v1
     env_file:
       - ./backend/.env
     ports:
-      - "8000:8000"
+      - "8053:8053"
     volumes:
       - ./backend:/app
       - static_volume:/app/staticfiles
@@ -21,11 +21,11 @@ services:
       bash -c "python manage.py makemigrations &&
                python manage.py migrate &&
                python manage.py collectstatic --noinput &&
-               gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --reload"
+               gunicorn config.wsgi:application --bind 0.0.0.0:8053 --workers 3 --reload"
     restart: unless-stopped
 
   frontend:
-    image: gowthamac/budget:fe-v3
+    image: gowthamac/budget1:fe-v1
     build:
       context: ./frontend
       platforms:

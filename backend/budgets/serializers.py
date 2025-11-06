@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from datetime import datetime
 from .models import Budget
 
 
@@ -22,6 +23,30 @@ class BudgetSerializer(serializers.ModelSerializer):
     def get_spent(self, obj):
         return obj.get_spent()
     
+    def validate_month(self, value):
+        """
+        Convert YYYY-MM or YYYY-MM-DD to first day of month
+        Accepts both formats and normalizes to first day of the month
+        """
+        if isinstance(value, str):
+            try:
+                if len(value) == 7:  # YYYY-MM format
+                    date_obj = datetime.strptime(value, '%Y-%m').date()
+                elif len(value) == 10:  # YYYY-MM-DD format
+                    date_obj = datetime.strptime(value, '%Y-%m-%d').date()
+                else:
+                    raise ValueError("Invalid date length")
+                
+                # Always return first day of month
+                return date_obj.replace(day=1)
+            except (ValueError, AttributeError) as e:
+                raise serializers.ValidationError(
+                    'Invalid date format. Use YYYY-MM or YYYY-MM-DD'
+                )
+        
+        # If it's already a date object, ensure it's the first day
+        return value.replace(day=1)
+    
     def validate_category(self, value):
         """Ensure category belongs to user and is expense type"""
         request = self.context.get('request')
@@ -34,6 +59,13 @@ class BudgetSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+    
+    def to_representation(self, instance):
+        """Return month in YYYY-MM-DD format for consistency"""
+        ret = super().to_representation(instance)
+        if instance.month:
+            ret['month'] = instance.month.strftime('%Y-%m-%d')
+        return ret
 
 
 class BudgetComparisonSerializer(serializers.Serializer):

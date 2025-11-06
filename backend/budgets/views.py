@@ -20,23 +20,38 @@ class BudgetViewSet(viewsets.ModelViewSet):
         month = self.request.query_params.get('month')
         if month:
             try:
-                month_date = datetime.strptime(month, '%Y-%m').date()
+                # Handle both YYYY-MM and YYYY-MM-DD formats
+                if len(month) == 7:  # YYYY-MM format
+                    month_date = datetime.strptime(month, '%Y-%m').date()
+                else:  # YYYY-MM-DD format
+                    month_date = datetime.strptime(month, '%Y-%m-%d').date()
+                
+                # Ensure first day of month
+                month_date = month_date.replace(day=1)
                 queryset = queryset.filter(month=month_date)
-            except ValueError:
+            except (ValueError, AttributeError):
                 pass
         
         return queryset
     
+    @action(detail=False, methods=['get'])
     @action(detail=False, methods=['get'])
     def comparison(self, request):
         """Get budget vs actual comparison"""
         month_param = request.query_params.get('month')
         if month_param:
             try:
-                month = datetime.strptime(month_param, '%Y-%m').date()
-            except ValueError:
+                # Handle both formats
+                if len(month_param) == 7:  # YYYY-MM
+                    month = datetime.strptime(month_param, '%Y-%m').date()
+                else:  # YYYY-MM-DD
+                    month = datetime.strptime(month_param, '%Y-%m-%d').date()
+                
+                # Ensure first day of month
+                month = month.replace(day=1)
+            except (ValueError, AttributeError):
                 return Response(
-                    {'error': 'Invalid month format. Use YYYY-MM'},
+                    {'error': 'Invalid month format. Use YYYY-MM or YYYY-MM-DD'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
         else:
