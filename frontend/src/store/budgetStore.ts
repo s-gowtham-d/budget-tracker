@@ -10,7 +10,7 @@ interface BudgetMonths {
 }
 
 interface BudgetState {
-  budgets: Budget[];
+  budgets: any;
   comparison: any[];
   isLoading: boolean;
   error: string | null;

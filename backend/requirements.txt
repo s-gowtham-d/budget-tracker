@@ -31,6 +31,10 @@ pytest
 pytest-django
 factory-boy
 faker
+google-generativeai
+python-dotenv
+gunicorn
+dj-database-url
 
 # anyio==4.8.0
 # argcomplete==3.6.2

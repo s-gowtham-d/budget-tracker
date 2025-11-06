@@ -19,7 +19,16 @@ const txSchema = z.object({
 })
 
 export function TransactionForm({ onAddTransaction }) {
-    const form = useForm({ resolver: zodResolver(txSchema), defaultValues: { name: "", category: "", type: "expense", amount: 0, date: "" } })
+    const form = useForm({
+    resolver: zodResolver(txSchema),
+    defaultValues: {
+        name: "",
+        category: "",
+        type: "expense" as "income" | "expense",
+        amount: 0,
+        date: "",
+    },
+    });
     const onSubmit = (values) => { onAddTransaction(values); form.reset() }
     const { symbol } = useCurrency();
 

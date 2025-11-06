@@ -415,6 +415,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useDashboardStore } from "@/store/dashboardStore";
+import { userAPI } from "@/lib/api";
 
 interface NavItem {
   title: string;
@@ -452,7 +453,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { theme, setTheme } = useTheme();
   const { open } = useSidebar();
   const { format } = useCurrency();
-  const {summary} = useDashboardStore();
+  const { summary } = useDashboardStore();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -469,6 +470,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         return <Moon className="mr-2 h-4 w-4" />;
       default:
         return <Monitor className="mr-2 h-4 w-4" />;
+    }
+  };
+
+  const { setUser } = useAuthStore();
+
+  const handleThemeChange = async (newTheme: "light" | "dark" | "system") => {
+    try {
+      setTheme(newTheme);
+
+      setUser({
+        ...user!,
+        theme: newTheme,
+      });
+
+      await userAPI.updateProfile({ theme: newTheme });
+    } catch (error) {
+      console.error("Failed to update theme preference:", error);
     }
   };
 
@@ -545,10 +563,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span
                     className={
                       summary?.summary?.balance_change > 0
-                        ? "text-emerald-500" 
+                        ? "text-emerald-500"
                         : summary?.summary?.balance_change < 0
-                        ? "text-red-500"     
-                        : "text-gray-400"  
+                          ? "text-red-500"
+                          : "text-gray-400"
                     }
                   >
                     {`${summary?.summary?.balance_change > 0 ? "+" : ""}${summary?.summary?.balance_change || 0}%`}
@@ -635,17 +653,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       Theme
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                      <DropdownMenuItem onClick={() => setTheme('light')}>
+                      <DropdownMenuItem onClick={() => handleThemeChange('light')}>
                         <Sun className="mr-2 h-4 w-4" />
                         Light
                         {theme === 'light' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('dark')}>
+                      <DropdownMenuItem onClick={() => handleThemeChange('dark')}>
                         <Moon className="mr-2 h-4 w-4" />
                         Dark
                         {theme === 'dark' && <span className="ml-auto">✓</span>}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setTheme('system')}>
+                      <DropdownMenuItem onClick={() => handleThemeChange('system')}>
                         <Monitor className="mr-2 h-4 w-4" />
                         System
                         {theme === 'system' && <span className="ml-auto">✓</span>}

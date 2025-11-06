@@ -141,7 +141,7 @@ export default function ExpensePieChart({ data }) {
             .style('opacity', 0)
             .text(d => {
                 const percentage = ((d.data.amount / total) * 100).toFixed(0);
-                return percentage > 5 ? `${percentage}%` : '';
+               return Number(percentage) > 5 ? `${percentage}%` : '';
             })
             .transition()
             .delay(800)
