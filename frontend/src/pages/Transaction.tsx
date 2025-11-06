@@ -400,6 +400,7 @@ import { useTransactionStore } from "@/store/transactionStore";
 // import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner"
 import { useDashboardStore } from '@/store/dashboardStore';
+import { FinanceAssistant } from '@/components/ai-assistant/FinanceAssistant';
 
 
 function Pagination({ currentPage, totalPages, onPageChange }: any) {
@@ -445,7 +446,7 @@ export default function Transactions() {
         setPage,
     } = useTransactionStore();
 
-    const {fetchSummary} = useDashboardStore()
+    const { fetchSummary } = useDashboardStore()
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingTransaction, setEditingTransaction] = useState(null);
@@ -459,9 +460,9 @@ export default function Transactions() {
         fetchCategories();
     }, [fetchTransactions, fetchCategories]);
 
-    useEffect(()=>{
-            fetchSummary(); 
-    }, [transactions,fetchSummary])
+    useEffect(() => {
+        fetchSummary();
+    }, [transactions, fetchSummary])
 
     const handleFilterChange = (newFilters: any) => {
         setFilters(newFilters);
@@ -557,6 +558,7 @@ export default function Transactions() {
     return (
         <SidebarProvider>
             <AppSidebar />
+            <FinanceAssistant />
             <SidebarInset>
                 <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-background">
                     <SidebarTrigger className="-ml-1" />

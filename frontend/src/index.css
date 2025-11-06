@@ -71,3 +71,39 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+/* 
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.prose {
+  color: var(--foreground);
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  color: var(--foreground);
+}
+
+.prose strong {
+  color: var(--foreground);
+}
+
+.prose a {
+  color: var(--primary);
+}
+
+.dark .prose {
+  color: var(--foreground);
+} */

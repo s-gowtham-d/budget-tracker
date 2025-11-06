@@ -173,3 +173,159 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@layer utilities {
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  /* Smooth scrolling */
+  .scroll-smooth {
+    scroll-behavior: smooth;
+  }
+
+  /* Prose styles for markdown */
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    @apply text-foreground font-semibold;
+  }
+
+  .prose p {
+    @apply text-foreground/90;
+  }
+
+  .prose strong {
+    @apply text-foreground font-semibold;
+  }
+
+  .prose a {
+    @apply text-primary hover:text-primary/80 underline underline-offset-2;
+  }
+
+  .prose code {
+    @apply text-foreground bg-muted px-1 py-0.5 rounded text-sm;
+  }
+
+  .prose pre {
+    @apply bg-muted p-3 rounded-lg overflow-x-auto;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply text-foreground/90 pl-5;
+  }
+
+  .prose li {
+    @apply text-foreground/90;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary/50 pl-4 italic text-muted-foreground;
+  }
+
+  /* Dark mode prose adjustments */
+  .dark .prose {
+    @apply text-foreground;
+  }
+
+  .dark .prose h1,
+  .dark .prose h2,
+  .dark .prose h3,
+  .dark .prose h4,
+  .dark .prose h5,
+  .dark .prose h6 {
+    @apply text-foreground;
+  }
+
+  .dark .prose p {
+    @apply text-foreground/90;
+  }
+
+  .dark .prose strong {
+    @apply text-foreground;
+  }
+
+  .dark .prose a {
+    @apply text-primary hover:text-primary/80;
+  }
+
+  .dark .prose code {
+    @apply text-foreground bg-muted;
+  }
+
+  .dark .prose ul,
+  .dark .prose ol,
+  .dark .prose li {
+    @apply text-foreground/90;
+  }
+
+  /* Custom animations */
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(8px);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-in {
+    animation: slide-in-from-bottom 0.3s ease-out;
+  }
+
+  /* Backdrop blur utilities */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent;
+  }
+}
+
+/* Global scrollbar styling for webkit browsers */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+}

@@ -16,6 +16,7 @@ interface AuthState {
   logout: () => void;
   setUser: (user: User) => void;
   clearError: () => void;
+  setIsAuthenticated: (isAuthenticated: boolean) => void;
 }
 
 interface RegisterData {
@@ -163,6 +164,9 @@ export const useAuthStore = create<AuthState>()(
       clearError: () => {
         set({ error: null });
       },
+      setIsAuthenticated: (isAuthenticated: boolean) => {
+        set({ isAuthenticated });
+      }
     }),
     {
       name: "auth-storage",

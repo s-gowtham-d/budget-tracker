@@ -267,6 +267,7 @@ import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import { TableSkeleton } from "@/components/dashboard/TableSkeleton";
 import { WelcomeOnboardingModal } from "@/components/onboarding/WelcomeOnboardingModal";
 import { useNavigate } from "react-router-dom";
+import { FinanceAssistant } from "@/components/ai-assistant/FinanceAssistant";
 
 export default function Dashboard() {
     const { summary, isLoading, error, fetchSummary, fetchRecentTransactions, recentTransactions } =
@@ -322,6 +323,7 @@ export default function Dashboard() {
         return (
             <SidebarProvider>
                 <AppSidebar />
+
                 <SidebarInset>
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                         <SidebarTrigger />
@@ -352,6 +354,7 @@ export default function Dashboard() {
     return (
         <SidebarProvider>
             <AppSidebar />
+            <FinanceAssistant />
 
             <WelcomeOnboardingModal
                 open={showOnboarding}

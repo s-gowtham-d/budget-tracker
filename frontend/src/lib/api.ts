@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/authStore";
 import axios, {
   type AxiosInstance,
   AxiosError,
@@ -16,11 +17,37 @@ const api: AxiosInstance = axios.create({
   },
 });
 
+// --- Refresh Token Logic State ---
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+// Function to process the queue of failed requests
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else if (token) {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+// --- End Refresh Token Logic State ---
+
+
 // Request interceptor - Add token to all requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    // Ensure headers object exists
+    if (!config.headers) {
+      config.headers = {};
+    }
+
     const token = localStorage.getItem("access_token");
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -38,37 +65,73 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // Handle 401 errors (token expired)
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+    // Check if error response exists and it's a 401, AND not the refresh token endpoint itself
+    if (
+      error.response?.status === 401 &&
+      !originalRequest.url?.includes("/auth/token/refresh/")
+    ) {
+      // If the original request has already been marked for retry, don't process it again
+      // This is a safety net, but the queue is the primary mechanism
+      if (originalRequest._retry) {
+        return Promise.reject(error);
+      }
+      originalRequest._retry = true; // Mark as retried to prevent infinite loops for *this specific request*
 
-      try {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (refreshToken) {
-          // Try to refresh token
-          const response = await axios.post(
-            `${API_BASE_URL}/auth/token/refresh/`,
-            {
-              refresh: refreshToken,
-            }
-          );
+      const refreshToken = localStorage.getItem("refresh_token");
 
-          const { access, refresh } = response.data;
-          localStorage.setItem("access_token", access);
-          localStorage.setItem("refresh_token", refresh);
-
-          // Retry original request with new token
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${access}`;
-          }
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, logout user
+      if (!refreshToken) {
+        // No refresh token -> logout
+        useAuthStore.getState().setIsAuthenticated(false);
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      // --- Handle Race Conditions ---
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+          }
+          return api(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      isRefreshing = true;
+
+      // --- Perform Refresh ---
+      try {
+        const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+          refresh: refreshToken,
+        });
+
+        const { access, refresh } = response.data;
+        localStorage.setItem("access_token", access);
+        if (refresh) {
+          localStorage.setItem("refresh_token", refresh);
+        }
+
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${access}`;
+        }
+
+        processQueue(null, access);
+
+        return api(originalRequest);
+      } catch (refreshError: any) {
+        useAuthStore.getState().setIsAuthenticated(false);
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        processQueue(refreshError, null);
+        window.location.href = "/login";
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -152,4 +215,21 @@ export const categoryAPI = {
   delete: (id: string | number) => api.delete(`/categories/${id}/`),
 };
 
+export const chatBotAPI = {
+  sendMessage: (data: {
+    message: string;
+    pending_transaction?: any;
+    user_context?: {
+      currency?: string;
+      timezone?: string;
+    };
+  }) => api.post('/ai/chat/', data),
+
+  getInsights: () => api.get('/ai/insights/'),
+
+  getChatHistory: (params?: { limit?: number }) =>
+    api.get('/ai/chat-history/', { params }),
+
+  clearChatHistory: () => api.delete('/ai/chat-history/'),
+};
 export default api;

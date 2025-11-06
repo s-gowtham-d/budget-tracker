@@ -51,6 +51,7 @@ urlpatterns = [
     path('api/', include('transactions.urls')),
     path('api/budgets/', include('budgets.urls')),
     path('api/dashboard/', include('dashboard.urls')),
+    path('api/ai/', include('ai_assistant.urls')),
 ]
 
 # Serve media files in development
