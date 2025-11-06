@@ -165,11 +165,201 @@ Docker simplifies the setup process by containerizing both the backend and front
 
     Refer to the `.env.example` files within `backend/config` and `frontend` for required variables.
 
-4.  **Build and run the Docker containers:**
+    # Budget Tracker
+
+    A personal budget tracking web application with a Django REST backend and a Vite + React frontend. This repository contains both the API server (`backend/`) and the single-page application (`frontend/`). A Docker Compose configuration is included to run both services together for development or production testing.
+
+    ## Table of contents
+
+    - [Features](#features)
+    - [Architecture](#architecture)
+    - [Prerequisites](#prerequisites)
+    - [Local development](#local-development)
+      - [Backend (Django)](#backend-django)
+      - [Frontend (Vite + React)](#frontend-vite--react)
+    - [Docker (compose)](#docker-compose)
+    - [Running tests](#running-tests)
+    - [Project structure](#project-structure)
+    - [Contributing](#contributing)
+    - [License](#license)
+
+    ## Features
+
+    - User accounts and authentication (Django REST)
+    - Transaction recording and categorization
+    - Budgets and summaries/dashboard data
+    - REST API for programmatic access
+    - Modern TypeScript React frontend (Vite) for a fast developer experience
+
+    ## Architecture
+
+    - Backend: Django REST Framework — located in `backend/`. Uses SQLite for local development (`backend/db.sqlite3`).
+    - Frontend: React + TypeScript built with Vite — located in `frontend/`.
+    - Containerization: `docker-compose.yml` defines services to run the backend and frontend together.
+
+    ## Prerequisites
+
+    - Git
+    - Docker & Docker Compose (optional — required to run with containers)
+    - For running locally without Docker:
+      - Python 3.10+ (3.11 recommended)
+      - Node.js (v16+ or v18+) and a package manager — this repo includes a `pnpm-lock.yaml`, so `pnpm` is recommended but `npm` or `yarn` will also work.
+
+    ## Local development
+
+    The repository contains two main folders: `backend/` and `frontend/`. You can run them independently during development or use Docker Compose to run both together.
+
+    ### Backend (Django)
+
+    1. Open a terminal and change to the backend folder:
 
     ```bash
-    docker-compose up --build
+    cd backend
     ```
+
+    2. Create and activate a virtual environment (macOS / Linux):
+
+    ```bash
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+    3. Install Python dependencies:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+    4. Apply migrations and create a superuser:
+
+    ```bash
+    python manage.py migrate
+    python manage.py createsuperuser
+    ```
+
+    5. Run the development server:
+
+    ```bash
+    python manage.py runserver
+    ```
+
+    By default the server runs on http://127.0.0.1:8000/ and exposes the API endpoints defined in the `backend` apps.
+
+    Notes:
+
+    - The project includes an existing SQLite DB at `backend/db.sqlite3` for quick local testing. If you rely on it, back it up before removing it.
+    - Environment-specific settings (secrets, DBs, third-party keys) should be configured via environment variables (see Docker section for examples).
+
+    ### Frontend (Vite + React)
+
+    1. Open a terminal and change to the frontend folder:
+
+    ```bash
+    cd frontend
+    ```
+
+    2. Install JavaScript dependencies (pnpm recommended):
+
+    ```bash
+    pnpm install
+    # or
+    npm install
+    ```
+
+    3. Start the dev server:
+
+    ```bash
+    pnpm run dev
+    # or
+    npm run dev
+    ```
+
+    The dev server will usually run at http://localhost:5173/ (Vite default) — the exact address is printed in the terminal.
+
+    To build for production:
+
+    ```bash
+    pnpm run build
+    # or
+    npm run build
+    ```
+
+    and preview:
+
+    ```bash
+    pnpm run preview
+    ```
+
+    ## Docker (compose)
+
+    This repo includes a `docker-compose.yml` at the repository root to run the backend and frontend together. Docker is a convenient way to get the full stack running with minimal local setup.
+
+    Start the stack (build on first run):
+
+    ```bash
+    docker compose up --build
+    ```
+
+    Stop and remove containers:
+
+    ```bash
+    docker compose down
+    ```
+
+    If you need to run only one service, you can run `docker compose up backend` or `docker compose up frontend`.
+
+    Environment variables and secrets should be provided via a `.env` file or Docker Compose overrides; this repository does not commit secrets into source control.
+
+    ## Running tests
+
+    Backend tests use pytest. From the repository root run:
+
+    ```bash
+    cd backend
+    pytest -q
+    ```
+
+    Frontend tests (if present) can be run from `frontend/` using the configured test runner (check `package.json`).
+
+    ## Project structure
+
+    - `backend/` — Django project and apps (accounts, budgets, transactions, dashboard, ai_assistant, ...)
+      - `manage.py` — Django CLI
+      - `requirements.txt` — Python dependencies
+      - `db.sqlite3` — local SQLite DB (committed for convenience)
+    - `frontend/` — Vite + React app (TypeScript)
+    - `docker-compose.yml` — development/stack orchestration
+
+    Explore each app folder for serializers, views, urls and tests.
+
+    ## Contributing
+
+    Contributions are welcome. A suggested flow:
+
+    1. Fork the repository
+    2. Create a feature branch: `git checkout -b feat/my-feature`
+    3. Run tests and linters locally
+    4. Open a pull request with a clear description of the change
+
+    Please adhere to the existing code style and add tests for new behavior.
+
+    ## License
+
+    This project includes a `LICENSE` file in the repository root. Review that file for license details.
+
+    ## Contact
+
+    If you want to discuss features or report issues, open an issue in this repository or reach out via the preferred contact method listed in project metadata.
+
+    ***
+
+    If you'd like, I can also:
+
+    - Add a short development checklist or troubleshooting section
+    - Add example environment variable files for Docker and local development
+    - Improve the contributing guide with a PR template and issue template
+
+    Tell me which of the above you'd like next and I'll add it.
 
     This command will:
 
