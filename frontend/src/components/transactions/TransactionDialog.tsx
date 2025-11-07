@@ -135,7 +135,16 @@ export default function TransactionDialog({
             // await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
 
             onSave(transactionData);
-            reset();
+            reset({
+                name: '',
+                amount: '',
+                type: 'expense',
+                category: '',
+                date: new Date(),
+                description: '',
+            });
+            setDate(new Date());
+            setTransactionType('expense');
             onOpenChange(false);
         } catch (error) {
             console.error('Error saving transaction:', error);
