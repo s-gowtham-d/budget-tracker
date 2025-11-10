@@ -558,7 +558,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </span>
                   <Wallet className="size-3 text-muted-foreground" />
                 </div>
-                <div className="text-2xl font-bold">{format(totalBalance)}</div>
+                <div className="text-2xl font-bold">{totalBalance < 0 ? "-":""}{format(totalBalance)}</div>
                 <p className="text-xs text-muted-foreground mt-1">
                   <span
                     className={
